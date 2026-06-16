@@ -161,7 +161,7 @@
     <div class="gate-icon">💵</div>
     <div class="gate-title">Trait Dough</div>
     <div class="gate-sub">Staff access only</div>
-    <input id="gate-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off" />
+    <input id="gate-pin" type="password" inputmode="text" maxlength="30" placeholder="Password" autocomplete="off" style="letter-spacing:0.1em" />
     <div id="gate-err"></div>
     <button class="gate-btn" id="gate-submit">Unlock</button>
   </div>
@@ -282,7 +282,7 @@
   })();
 
   function tryPin() {
-    if (document.getElementById('gate-pin').value.trim() === '5064') {
+    if (document.getElementById('gate-pin').value.trim() === 'togetherweclimb') {
       sessionStorage.setItem('td_auth', '1');
       unlock();
     } else {

@@ -9,6 +9,7 @@
   <title>Trait Dough</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <style>
     :root {
@@ -173,6 +174,55 @@
     .log-table td { padding: 7px 10px; border-bottom: 1px solid rgba(73,14,111,0.2); color: var(--text); vertical-align: middle; }
     .log-table tr:last-child td { border-bottom: none; }
     .sq-pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 800; letter-spacing: 0.06em; }
+
+    /* Scan QR button */
+    .scan-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0.55rem 1rem; border-radius: 9px;
+      border: 1.5px solid rgba(255,225,0,0.35);
+      background: rgba(255,225,0,0.07); color: var(--gold);
+      font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em;
+      text-transform: uppercase; cursor: pointer; font-family: inherit;
+      transition: all 0.18s; margin-bottom: 0.75rem;
+    }
+    .scan-btn:hover { background: rgba(255,225,0,0.13); border-color: var(--gold); }
+
+    /* Camera modal */
+    #camera-modal {
+      display: none; position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+    }
+    #camera-modal.open { display: flex; }
+    .cam-box {
+      background: var(--card); border: 1px solid rgba(255,225,0,0.25);
+      border-radius: 20px; padding: 1.5rem; width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .cam-title { font-size: 0.88rem; font-weight: 800; color: var(--gold); letter-spacing: 0.06em; text-transform: uppercase; }
+    .cam-sub   { font-size: 0.72rem; color: var(--muted); margin-top: -0.5rem; }
+    #cam-video { width: 100%; border-radius: 12px; background: #000; display: block; max-height: 300px; object-fit: cover; }
+    #cam-canvas { display: none; }
+    .cam-status { font-size: 0.78rem; color: var(--muted); text-align: center; min-height: 1.2em; }
+    .cam-status.found { color: #22c55e; }
+    .cam-actions { display: flex; gap: 8px; }
+    .cam-close { flex: 1; padding: 0.65rem; border-radius: 10px; border: 1px solid rgba(255,225,0,0.3); background: transparent; color: var(--muted); font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .cam-close:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Master list */
+    .master-toggle {
+      width: 100%; padding: 0.7rem; border-radius: 10px; margin-bottom: 1rem;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); font-family: inherit; font-size: 0.8rem;
+      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .master-toggle:hover { border-color: rgba(255,225,0,0.4); color: var(--gold); }
+    #masterList { display: none; }
+    #masterList.open { display: block; }
+    .export-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .export-bar span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .csv-btn { padding: 0.45rem 1rem; border-radius: 8px; border: none; background: var(--gold); color: var(--purple); font-weight: 900; font-size: 0.72rem; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
+    .csv-btn:hover { opacity: 0.85; }
   </style>
 </head>
 <body>
@@ -202,7 +252,7 @@
 <!-- App -->
 <div class="app" id="app" style="display:none">
   <div class="header">
-    <div class="header-badge"><span class="badge-dot"></span>EMS · Ephrata Middle School</div>
+    <div class="header-badge"><span class="badge-dot"></span>EMS · Trait Tracker</div>
     <h1>Trait Dough</h1>
     <p>Log a trait → award your squad 1 point in Clash of Classes</p>
   </div>
@@ -223,6 +273,11 @@
       <label>Staff Name *</label>
       <input id="staffName" type="text" placeholder="Your name" required autocomplete="name" />
     </div>
+
+    <button type="button" class="scan-btn" onclick="openCamera()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h2M18 14v3h-2"/></svg>
+      Scan Student QR
+    </button>
 
     <div class="grid2">
       <div class="field">
@@ -286,6 +341,41 @@
         </tr></thead>
         <tbody id="logBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1rem">Loading…</td></tr></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Master list + CSV -->
+  <button class="master-toggle" onclick="toggleMaster()">View All Submissions &amp; Export CSV</button>
+  <div id="masterList">
+    <div class="card">
+      <div class="export-bar">
+        <span id="masterCount">All submissions</span>
+        <button class="csv-btn" onclick="exportCSV()">Download CSV</button>
+      </div>
+      <div class="log-wrap">
+        <table class="log-table" id="masterTable">
+          <thead><tr>
+            <th>Date</th><th>Time</th><th>Staff</th><th>Student</th><th>Gr</th><th>Squad</th><th>Trait</th><th>Notes</th>
+          </tr></thead>
+          <tbody id="masterBody"><tr><td colspan="8" style="color:var(--muted);text-align:center;padding:1rem">Click above to load…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Camera modal -->
+<div id="camera-modal">
+  <div class="cam-box">
+    <div>
+      <div class="cam-title">Scan Student QR</div>
+      <div class="cam-sub">Point camera at student QR badge to auto-fill info</div>
+    </div>
+    <video id="cam-video" autoplay playsinline muted></video>
+    <canvas id="cam-canvas"></canvas>
+    <div class="cam-status" id="cam-status">Starting camera…</div>
+    <div class="cam-actions">
+      <button class="cam-close" onclick="closeCamera()">Cancel</button>
     </div>
   </div>
 </div>
@@ -447,6 +537,162 @@
     const t = document.getElementById('toast');
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ── Camera QR Scanner ──
+  let camStream = null;
+  let scanLoop  = null;
+
+  async function openCamera() {
+    document.getElementById('camera-modal').classList.add('open');
+    const status = document.getElementById('cam-status');
+    status.textContent = 'Starting camera…';
+    status.className = 'cam-status';
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const video = document.getElementById('cam-video');
+      video.srcObject = camStream;
+      await video.play();
+      status.textContent = 'Point camera at a student QR code';
+      startScanLoop();
+    } catch(e) {
+      status.textContent = 'Camera access denied. Check browser permissions.';
+    }
+  }
+
+  function startScanLoop() {
+    const video  = document.getElementById('cam-video');
+    const canvas = document.getElementById('cam-canvas');
+    const ctx    = canvas.getContext('2d');
+    const status = document.getElementById('cam-status');
+
+    scanLoop = setInterval(() => {
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Try BarcodeDetector first (fast, native Chrome/Android)
+      if (window.BarcodeDetector) {
+        const bd = new BarcodeDetector({ formats: ['qr_code'] });
+        bd.detect(canvas).then(codes => {
+          if (codes.length > 0) handleQRResult(codes[0].rawValue);
+        }).catch(() => {});
+      } else if (window.jsQR) {
+        // jsQR fallback
+        const code = window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+        if (code) handleQRResult(code.data);
+      }
+    }, 250);
+  }
+
+  function handleQRResult(raw) {
+    clearInterval(scanLoop);
+    scanLoop = null;
+    const status = document.getElementById('cam-status');
+    try {
+      // Support JSON format: {"name":"...","grade":"8","squad":"GOLD"}
+      const data = JSON.parse(raw);
+      if (data.name)  document.getElementById('studentName').value = data.name;
+      if (data.grade) document.getElementById('grade').value = data.grade;
+      if (data.squad) {
+        const btn = document.querySelector(`.squad-btn[data-squad="${data.squad.toUpperCase()}"]`);
+        if (btn) btn.click();
+      }
+      status.textContent = 'Student loaded: ' + (data.name || 'unknown');
+      status.className = 'cam-status found';
+      setTimeout(closeCamera, 900);
+    } catch(e) {
+      // Try plain text "Name|Grade|Squad" format
+      const parts = raw.split('|');
+      if (parts.length >= 1) document.getElementById('studentName').value = parts[0].trim();
+      if (parts.length >= 2) document.getElementById('grade').value = parts[1].trim();
+      if (parts.length >= 3) {
+        const btn = document.querySelector(`.squad-btn[data-squad="${parts[2].trim().toUpperCase()}"]`);
+        if (btn) btn.click();
+      }
+      status.textContent = parts.length >= 2 ? 'Student loaded: ' + parts[0].trim() : 'Unrecognized QR. Try again.';
+      status.className = parts.length >= 2 ? 'cam-status found' : 'cam-status';
+      if (parts.length >= 2) setTimeout(closeCamera, 900);
+      else scanLoop = setInterval(startScanLoop, 250);
+    }
+  }
+
+  function closeCamera() {
+    if (scanLoop)   { clearInterval(scanLoop); scanLoop = null; }
+    if (camStream)  { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    document.getElementById('cam-video').srcObject = null;
+    document.getElementById('camera-modal').classList.remove('open');
+  }
+
+  // ── Master list ──
+  let masterLoaded = false;
+  let allRows = [];
+
+  async function toggleMaster() {
+    const el = document.getElementById('masterList');
+    const open = el.classList.toggle('open');
+    if (open && !masterLoaded) await loadMaster();
+  }
+
+  async function loadMaster() {
+    const body = document.getElementById('masterBody');
+    body.innerHTML = '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:1rem">Loading…</td></tr>';
+    try {
+      const r = await fetch(SB_URL + '/rest/v1/trait_dough_log?select=*&order=created_at.desc&limit=1000', { headers: HEADERS });
+      allRows = await r.json();
+      masterLoaded = true;
+      document.getElementById('masterCount').textContent = allRows.length + ' submissions';
+      renderMaster();
+    } catch(e) {
+      body.innerHTML = '<tr><td colspan="8" style="color:#f87171;text-align:center;padding:1rem">Load failed</td></tr>';
+    }
+  }
+
+  function renderMaster() {
+    const body = document.getElementById('masterBody');
+    if (!allRows.length) {
+      body.innerHTML = '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:1rem">No submissions yet</td></tr>';
+      return;
+    }
+    body.innerHTML = allRows.map(row => {
+      const dt    = new Date(row.created_at);
+      const date  = dt.toLocaleDateString();
+      const time  = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const sqHex = SQ_HEX[row.squad] || '#888';
+      const pill  = `<span class="sq-pill" style="background:${sqHex}22;color:${sqHex};border:1px solid ${sqHex}55">${row.squad}</span>`;
+      return `<tr>
+        <td style="color:var(--muted);white-space:nowrap">${date}</td>
+        <td style="color:var(--muted);white-space:nowrap">${time}</td>
+        <td>${row.staff_name}</td>
+        <td>${row.student_name}</td>
+        <td style="color:var(--muted)">${row.grade}</td>
+        <td>${pill}</td>
+        <td style="color:var(--muted)">${row.trait}</td>
+        <td style="color:var(--muted)">${row.notes || ''}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function exportCSV() {
+    if (!allRows.length) { alert('No data to export.'); return; }
+    const headers = ['Date','Time','Staff Name','Student Name','Grade','Squad','Trait','Notes'];
+    const rows = allRows.map(r => {
+      const dt = new Date(r.created_at);
+      return [
+        dt.toLocaleDateString(),
+        dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        r.staff_name, r.student_name, r.grade, r.squad, r.trait,
+        (r.notes || '').replace(/,/g, ';')
+      ].map(v => `"${v}"`).join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'trait-dough-submissions.csv';
+    a.click(); URL.revokeObjectURL(url);
   }
 </script>
 </body>

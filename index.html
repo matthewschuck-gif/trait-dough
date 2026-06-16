@@ -175,6 +175,29 @@
     .log-table tr:last-child td { border-bottom: none; }
     .sq-pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 800; letter-spacing: 0.06em; }
 
+    /* Header image */
+    .header-img-wrap {
+      margin: 0 auto 1.25rem; width: 120px; height: 120px;
+      border-radius: 50%; overflow: hidden;
+      border: 2px solid rgba(255,225,0,0.3);
+      box-shadow: 0 0 24px rgba(255,225,0,0.15);
+      position: relative; cursor: pointer;
+    }
+    .header-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .header-img-placeholder {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      background: rgba(255,225,0,0.06); color: rgba(255,225,0,0.3); font-size: 2rem;
+    }
+    .header-img-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s; border-radius: 50%;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gold);
+    }
+    .header-img-wrap:hover .header-img-overlay { opacity: 1; }
+    #header-img-input { display: none; }
+
     /* Scan QR button */
     .scan-btn {
       display: flex; align-items: center; gap: 7px;
@@ -190,23 +213,94 @@
     /* Camera modal */
     #camera-modal {
       display: none; position: fixed; inset: 0; z-index: 9000;
-      background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.92); align-items: flex-start; justify-content: center;
+      overflow-y: auto; padding: 1rem;
     }
     #camera-modal.open { display: flex; }
     .cam-box {
       background: var(--card); border: 1px solid rgba(255,225,0,0.25);
-      border-radius: 20px; padding: 1.5rem; width: 100%; max-width: 400px;
-      display: flex; flex-direction: column; gap: 1rem;
+      border-radius: 20px; padding: 1.25rem; width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 0.9rem;
+      margin: auto;
     }
+    .cam-header { display: flex; align-items: flex-start; justify-content: space-between; }
     .cam-title { font-size: 0.88rem; font-weight: 800; color: var(--gold); letter-spacing: 0.06em; text-transform: uppercase; }
-    .cam-sub   { font-size: 0.72rem; color: var(--muted); margin-top: -0.5rem; }
-    #cam-video { width: 100%; border-radius: 12px; background: #000; display: block; max-height: 300px; object-fit: cover; }
+    .cam-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .cam-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0; line-height: 1; }
+    .cam-x:hover { color: var(--text); }
+    #cam-video { width: 100%; border-radius: 12px; background: #000; display: block; max-height: 260px; object-fit: cover; }
     #cam-canvas { display: none; }
     .cam-status { font-size: 0.78rem; color: var(--muted); text-align: center; min-height: 1.2em; }
     .cam-status.found { color: #22c55e; }
-    .cam-actions { display: flex; gap: 8px; }
+
+    /* Review panel */
+    .cam-student-card {
+      background: rgba(255,225,0,0.07); border: 1px solid rgba(255,225,0,0.25);
+      border-radius: 12px; padding: 0.85rem 1rem;
+    }
+    .cam-student-name { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .cam-student-meta { font-size: 0.78rem; color: var(--muted); }
+    .cam-squad-pill {
+      display: inline-block; padding: 1px 8px; border-radius: 20px;
+      font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
+      margin-left: 6px; vertical-align: middle;
+    }
+    .cam-field label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b5a8a; margin-bottom: 4px; }
+    .cam-field select, .cam-field input {
+      width: 100%; padding: 0.55rem 0.75rem; border-radius: 9px;
+      border: 1.5px solid rgba(73,14,111,0.5);
+      background: rgba(0,0,0,0.35); color: var(--text);
+      font-size: 0.85rem; outline: none; font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .cam-field select:focus, .cam-field input:focus { border-color: var(--gold); }
+    .cam-field select option { background: #1a0030; }
+    .cam-review-actions { display: flex; gap: 8px; }
+    .cam-scan-next {
+      flex: 1; padding: 0.6rem; border-radius: 10px;
+      border: 1px solid rgba(255,225,0,0.3); background: transparent;
+      color: var(--muted); font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .cam-scan-next:hover { border-color: var(--gold); color: var(--gold); }
+    .cam-use-this {
+      flex: 1; padding: 0.6rem; border-radius: 10px; border: none;
+      background: var(--gold); color: var(--purple);
+      font-family: inherit; font-size: 0.8rem; font-weight: 900;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .cam-use-this:hover { opacity: 0.88; }
+
+    /* Queue */
+    .cam-queue-header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border); padding-top: 0.75rem;
+    }
+    .cam-queue-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .cam-queue-clear { background: none; border: none; color: var(--muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; }
+    .cam-queue-clear:hover { color: #f87171; }
+    .cam-queue-list { display: flex; flex-direction: column; gap: 6px; }
+    .cam-queue-item {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.04); border-radius: 9px; padding: 6px 10px;
+    }
+    .cam-queue-item-info { flex: 1; font-size: 0.78rem; }
+    .cam-queue-item-name { font-weight: 700; color: var(--text); }
+    .cam-queue-item-trait { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+    .cam-queue-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+    .cam-queue-remove:hover { color: #f87171; }
+
+    .cam-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 0.75rem; }
     .cam-close { flex: 1; padding: 0.65rem; border-radius: 10px; border: 1px solid rgba(255,225,0,0.3); background: transparent; color: var(--muted); font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
     .cam-close:hover { border-color: var(--gold); color: var(--gold); }
+    .cam-submit-all {
+      flex: 2; padding: 0.65rem; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--purple-mid), var(--purple));
+      color: var(--gold); font-family: inherit; font-size: 0.82rem; font-weight: 900;
+      cursor: pointer; transition: opacity 0.15s; letter-spacing: 0.04em;
+    }
+    .cam-submit-all:hover { opacity: 0.88; }
+    .cam-submit-all:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Master list */
     .master-toggle {
@@ -252,6 +346,12 @@
 <!-- App -->
 <div class="app" id="app" style="display:none">
   <div class="header">
+    <div class="header-img-wrap" onclick="document.getElementById('header-img-input').click()" title="Click to update header photo">
+      <img id="header-img" src="" alt="Trait Dough" style="display:none" />
+      <div class="header-img-placeholder" id="header-img-placeholder">💵</div>
+      <div class="header-img-overlay">Change Photo</div>
+    </div>
+    <input type="file" id="header-img-input" accept="image/*" onchange="uploadHeaderImage(this)" />
     <div class="header-badge"><span class="badge-dot"></span>EMS · Trait Tracker</div>
     <h1>Trait Dough</h1>
     <p>Log a trait → award your squad 1 point in Clash of Classes</p>
@@ -367,15 +467,65 @@
 <!-- Camera modal -->
 <div id="camera-modal">
   <div class="cam-box">
-    <div>
-      <div class="cam-title">Scan Student QR</div>
-      <div class="cam-sub">Point camera at student QR badge to auto-fill info</div>
+
+    <div class="cam-header">
+      <div>
+        <div class="cam-title" id="cam-title">Scan Student QR</div>
+        <div class="cam-sub" id="cam-sub">Point camera at student QR badge</div>
+      </div>
+      <button class="cam-x" onclick="closeCamera()">✕</button>
     </div>
-    <video id="cam-video" autoplay playsinline muted></video>
-    <canvas id="cam-canvas"></canvas>
-    <div class="cam-status" id="cam-status">Starting camera…</div>
+
+    <!-- Scan panel -->
+    <div id="cam-scan-panel">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <canvas id="cam-canvas"></canvas>
+      <div class="cam-status" id="cam-status">Starting camera…</div>
+    </div>
+
+    <!-- Review panel (shown after QR detected) -->
+    <div id="cam-review-panel" style="display:none">
+      <div class="cam-student-card">
+        <div class="cam-student-name" id="cam-rev-name"></div>
+        <div class="cam-student-meta" id="cam-rev-meta"></div>
+      </div>
+      <div class="cam-field">
+        <label>Trait Demonstrated *</label>
+        <select id="cam-trait">
+          <option value="">Select a trait…</option>
+          <option>Continual Learning &amp; Growth Mindset</option>
+          <option>Critical Thinking &amp; Problem Solving</option>
+          <option>Creativity &amp; Innovation</option>
+          <option>Adaptability &amp; Flexibility</option>
+          <option>Resilience &amp; Grit</option>
+          <option>Communication &amp; Empathy</option>
+          <option>Collaboration &amp; Teamwork</option>
+          <option>Honesty, Integrity, &amp; Responsibility</option>
+          <option>Healthy Living, Wellness, &amp; Self-Awareness</option>
+        </select>
+      </div>
+      <div class="cam-field">
+        <label>Notes (optional)</label>
+        <input id="cam-notes" type="text" placeholder="Brief description of what they did…" />
+      </div>
+      <div class="cam-review-actions">
+        <button class="cam-scan-next" onclick="addToQueueAndRescan()">＋ Scan Another</button>
+        <button class="cam-use-this" onclick="addToQueueAndDone()">Submit This →</button>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div id="cam-queue-wrap" style="display:none">
+      <div class="cam-queue-header">
+        <span class="cam-queue-label" id="cam-queue-label">Queue</span>
+        <button class="cam-queue-clear" onclick="clearQueue()">Clear all</button>
+      </div>
+      <div class="cam-queue-list" id="cam-queue-list"></div>
+    </div>
+
     <div class="cam-actions">
       <button class="cam-close" onclick="closeCamera()">Cancel</button>
+      <button class="cam-submit-all" id="cam-submit-all" onclick="submitQueue()" style="display:none">Submit All (0)</button>
     </div>
   </div>
 </div>
@@ -423,6 +573,7 @@
     document.getElementById('app').style.display = 'block';
     loadTally();
     loadLog();
+    loadHeaderImage();
   }
 
   // ── Squad buttons ──
@@ -540,11 +691,15 @@
   }
 
   // ── Camera QR Scanner ──
-  let camStream = null;
-  let scanLoop  = null;
+  let camStream     = null;
+  let scanLoop      = null;
+  let currentScan   = null; // {name, grade, squad}
+  let scanQueue     = [];
 
   async function openCamera() {
     document.getElementById('camera-modal').classList.add('open');
+    showScanPanel();
+    updateQueueUI();
     const status = document.getElementById('cam-status');
     status.textContent = 'Starting camera…';
     status.className = 'cam-status';
@@ -560,6 +715,29 @@
     }
   }
 
+  function showScanPanel() {
+    document.getElementById('cam-scan-panel').style.display = 'block';
+    document.getElementById('cam-review-panel').style.display = 'none';
+    document.getElementById('cam-title').textContent = 'Scan Student QR';
+    document.getElementById('cam-sub').textContent = 'Point camera at student QR badge';
+  }
+
+  function showReviewPanel(data) {
+    clearInterval(scanLoop); scanLoop = null;
+    currentScan = data;
+    document.getElementById('cam-scan-panel').style.display = 'none';
+    document.getElementById('cam-review-panel').style.display = 'block';
+    document.getElementById('cam-title').textContent = 'Student Found ✓';
+    document.getElementById('cam-sub').textContent = 'Review info, pick a trait, then submit';
+    document.getElementById('cam-rev-name').textContent = data.name || 'Unknown Student';
+    const sqHex = SQ_HEX[data.squad] || '#888';
+    document.getElementById('cam-rev-meta').innerHTML =
+      `Grade ${data.grade || '?'} &nbsp;` +
+      (data.squad ? `<span class="cam-squad-pill" style="background:${sqHex}22;color:${sqHex};border:1px solid ${sqHex}55">${data.squad}</span>` : '');
+    document.getElementById('cam-trait').value = '';
+    document.getElementById('cam-notes').value = '';
+  }
+
   function startScanLoop() {
     const video  = document.getElementById('cam-video');
     const canvas = document.getElementById('cam-canvas');
@@ -573,14 +751,12 @@
       ctx.drawImage(video, 0, 0);
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-      // Try BarcodeDetector first (fast, native Chrome/Android)
       if (window.BarcodeDetector) {
         const bd = new BarcodeDetector({ formats: ['qr_code'] });
         bd.detect(canvas).then(codes => {
           if (codes.length > 0) handleQRResult(codes[0].rawValue);
         }).catch(() => {});
       } else if (window.jsQR) {
-        // jsQR fallback
         const code = window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
         if (code) handleQRResult(code.data);
       }
@@ -588,42 +764,207 @@
   }
 
   function handleQRResult(raw) {
-    clearInterval(scanLoop);
-    scanLoop = null;
-    const status = document.getElementById('cam-status');
+    clearInterval(scanLoop); scanLoop = null;
+    let data = { name: '', grade: '', squad: '' };
     try {
-      // Support JSON format: {"name":"...","grade":"8","squad":"GOLD"}
-      const data = JSON.parse(raw);
-      if (data.name)  document.getElementById('studentName').value = data.name;
-      if (data.grade) document.getElementById('grade').value = data.grade;
-      if (data.squad) {
-        const btn = document.querySelector(`.squad-btn[data-squad="${data.squad.toUpperCase()}"]`);
-        if (btn) btn.click();
-      }
-      status.textContent = 'Student loaded: ' + (data.name || 'unknown');
-      status.className = 'cam-status found';
-      setTimeout(closeCamera, 900);
+      const parsed = JSON.parse(raw);
+      data.name  = parsed.name  || '';
+      data.grade = parsed.grade || '';
+      data.squad = (parsed.squad || '').toUpperCase();
     } catch(e) {
-      // Try plain text "Name|Grade|Squad" format
       const parts = raw.split('|');
-      if (parts.length >= 1) document.getElementById('studentName').value = parts[0].trim();
-      if (parts.length >= 2) document.getElementById('grade').value = parts[1].trim();
-      if (parts.length >= 3) {
-        const btn = document.querySelector(`.squad-btn[data-squad="${parts[2].trim().toUpperCase()}"]`);
-        if (btn) btn.click();
+      data.name  = (parts[0] || '').trim();
+      data.grade = (parts[1] || '').trim();
+      data.squad = (parts[2] || '').trim().toUpperCase();
+    }
+    if (!data.name) {
+      document.getElementById('cam-status').textContent = 'Unrecognized QR — try again.';
+      startScanLoop();
+      return;
+    }
+    showReviewPanel(data);
+  }
+
+  function addToQueueAndRescan() {
+    const trait = document.getElementById('cam-trait').value;
+    if (!trait) { document.getElementById('cam-trait').focus(); return; }
+    const notes = document.getElementById('cam-notes').value.trim();
+    scanQueue.push({ ...currentScan, trait, notes });
+    currentScan = null;
+    updateQueueUI();
+    showScanPanel();
+    // Resume camera
+    const status = document.getElementById('cam-status');
+    status.textContent = 'Point camera at next student QR code';
+    startScanLoop();
+  }
+
+  async function addToQueueAndDone() {
+    const trait = document.getElementById('cam-trait').value;
+    if (!trait) { document.getElementById('cam-trait').focus(); return; }
+    const notes = document.getElementById('cam-notes').value.trim();
+    scanQueue.push({ ...currentScan, trait, notes });
+    currentScan = null;
+    updateQueueUI();
+    await submitQueue();
+  }
+
+  function updateQueueUI() {
+    const wrap = document.getElementById('cam-queue-wrap');
+    const list = document.getElementById('cam-queue-list');
+    const btn  = document.getElementById('cam-submit-all');
+    const lbl  = document.getElementById('cam-queue-label');
+
+    if (!scanQueue.length) {
+      wrap.style.display = 'none';
+      btn.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+    btn.style.display = 'block';
+    btn.textContent = `Submit All (${scanQueue.length})`;
+    lbl.textContent = `Queue — ${scanQueue.length} student${scanQueue.length > 1 ? 's' : ''}`;
+
+    list.innerHTML = scanQueue.map((item, i) => {
+      const sqHex = SQ_HEX[item.squad] || '#888';
+      const pill = `<span class="cam-squad-pill" style="background:${sqHex}22;color:${sqHex};border:1px solid ${sqHex}55;font-size:8px;padding:1px 5px;border-radius:10px">${item.squad}</span>`;
+      const traitShort = item.trait.length > 30 ? item.trait.slice(0,28)+'…' : item.trait;
+      return `<div class="cam-queue-item">
+        <div class="cam-queue-item-info">
+          <div class="cam-queue-item-name">${item.name} ${pill}</div>
+          <div class="cam-queue-item-trait">Gr ${item.grade} · ${traitShort}</div>
+        </div>
+        <button class="cam-queue-remove" onclick="removeFromQueue(${i})">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  function removeFromQueue(i) {
+    scanQueue.splice(i, 1);
+    updateQueueUI();
+  }
+
+  function clearQueue() {
+    scanQueue = [];
+    updateQueueUI();
+  }
+
+  async function submitQueue() {
+    if (!scanQueue.length) return;
+    const staffName = document.getElementById('staffName').value.trim();
+    if (!staffName) {
+      closeCamera();
+      document.getElementById('staffName').focus();
+      showToast('Missing staff name', 'Enter your name in the form first.', '#f87171');
+      return;
+    }
+    const btn = document.getElementById('cam-submit-all');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    try {
+      // Fetch current CoC data once
+      const r = await fetch(SB_URL + '/rest/v1/app_data?select=value&key=eq.coc&limit=1', { headers: HEADERS });
+      const arr = await r.json();
+      const D = arr && arr[0] ? arr[0].value : {};
+      if (!D.traitDoughTally) D.traitDoughTally = { BLACK: 0, GOLD: 0, GREY: 0, PURPLE: 0 };
+
+      // Submit each item in order
+      for (const item of scanQueue) {
+        await fetch(SB_URL + '/rest/v1/trait_dough_log', {
+          method: 'POST', headers: WRITE_H,
+          body: JSON.stringify({
+            staff_name: staffName, student_name: item.name,
+            grade: item.grade, squad: item.squad,
+            trait: item.trait, notes: item.notes
+          })
+        });
+        D.traitDoughTally[item.squad] = (D.traitDoughTally[item.squad] || 0) + 1;
       }
-      status.textContent = parts.length >= 2 ? 'Student loaded: ' + parts[0].trim() : 'Unrecognized QR. Try again.';
-      status.className = parts.length >= 2 ? 'cam-status found' : 'cam-status';
-      if (parts.length >= 2) setTimeout(closeCamera, 900);
-      else scanLoop = setInterval(startScanLoop, 250);
+
+      // Save updated tally once
+      await fetch(SB_URL + '/rest/v1/app_data', {
+        method: 'POST', headers: WRITE_H,
+        body: JSON.stringify({ key: 'coc', value: D, updated_at: new Date().toISOString() })
+      });
+
+      const count = scanQueue.length;
+      const squads = [...new Set(scanQueue.map(i => i.squad))].join(', ');
+      showToast(`${count} trait${count > 1 ? 's' : ''} awarded 💵`, `Squads credited: ${squads}`, '#22c55e');
+      scanQueue = [];
+      closeCamera();
+      loadTally();
+      loadLog();
+    } catch(e) {
+      showToast('Error', 'Could not save. Check connection.', '#f87171');
+      btn.disabled = false;
+      btn.textContent = `Submit All (${scanQueue.length})`;
     }
   }
 
   function closeCamera() {
-    if (scanLoop)   { clearInterval(scanLoop); scanLoop = null; }
-    if (camStream)  { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    if (scanLoop)  { clearInterval(scanLoop); scanLoop = null; }
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
     document.getElementById('cam-video').srcObject = null;
     document.getElementById('camera-modal').classList.remove('open');
+    showScanPanel();
+  }
+
+  // ── Header image ──
+  async function loadHeaderImage() {
+    try {
+      const r = await fetch(SB_URL + '/rest/v1/app_data?select=value&key=eq.td_header_img&limit=1', { headers: HEADERS });
+      const arr = await r.json();
+      if (arr && arr[0] && arr[0].value && arr[0].value.url) {
+        setHeaderImg(arr[0].value.url);
+      }
+    } catch(e) {}
+  }
+
+  function setHeaderImg(url) {
+    const img = document.getElementById('header-img');
+    const placeholder = document.getElementById('header-img-placeholder');
+    img.src = url;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+  }
+
+  async function uploadHeaderImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    showToast('Uploading…', 'Saving your photo to Supabase', '#9b7fc0');
+    try {
+      // Try Supabase Storage
+      const ext  = file.name.split('.').pop();
+      const path = `header.${ext}`;
+      const storageUrl = `${SB_URL}/storage/v1/object/trait-dough/${path}`;
+      const uploadRes = await fetch(storageUrl, {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+        body: file
+      });
+      let publicUrl;
+      if (uploadRes.ok) {
+        publicUrl = `${SB_URL}/storage/v1/object/public/trait-dough/${path}`;
+      } else {
+        // Fallback: store as base64 data URL in app_data directly
+        publicUrl = await new Promise(res => {
+          const reader = new FileReader();
+          reader.onload = e => res(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }
+      // Save URL to app_data
+      await fetch(SB_URL + '/rest/v1/app_data', {
+        method: 'POST', headers: WRITE_H,
+        body: JSON.stringify({ key: 'td_header_img', value: { url: publicUrl }, updated_at: new Date().toISOString() })
+      });
+      setHeaderImg(publicUrl);
+      showToast('Photo saved! 📸', 'Header image updated', '#22c55e');
+    } catch(e) {
+      showToast('Upload failed', 'Could not save photo', '#f87171');
+    }
+    input.value = '';
   }
 
   // ── Master list ──

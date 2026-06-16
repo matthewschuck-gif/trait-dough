@@ -60,6 +60,28 @@
     }
     .gate-btn:hover { opacity: 0.88; }
 
+    /* QR toggle link */
+    .gate-qr-link {
+      display: block; margin-top: 1.1rem;
+      font-size: 0.72rem; color: var(--muted); cursor: pointer;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      font-weight: 700; transition: color 0.2s; border: none;
+      background: none; font-family: inherit; width: 100%;
+    }
+    .gate-qr-link:hover { color: var(--gold); }
+    .qr-panel {
+      display: none; margin-top: 1.25rem;
+      padding-top: 1.25rem; border-top: 1px solid rgba(255,225,0,0.12);
+    }
+    .qr-panel.open { display: block; }
+    .qr-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.75rem; }
+    .qr-img-wrap {
+      display: flex; justify-content: center;
+      background: #fff; border-radius: 12px; padding: 12px;
+    }
+    .qr-img-wrap img { width: 160px; height: 160px; display: block; }
+    .qr-hint { font-size: 0.68rem; color: var(--muted); margin-top: 0.6rem; opacity: 0.75; }
+
     /* ── APP ── */
     .app { max-width: 520px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 
@@ -164,6 +186,16 @@
     <input id="gate-pin" type="password" inputmode="text" maxlength="30" placeholder="Password" autocomplete="off" style="letter-spacing:0.1em" />
     <div id="gate-err"></div>
     <button class="gate-btn" id="gate-submit">Unlock</button>
+
+    <button class="gate-qr-link" onclick="toggleQR()">Scan to open on another device</button>
+
+    <div class="qr-panel" id="qr-panel">
+      <div class="qr-label">Scan with your camera app</div>
+      <div class="qr-img-wrap">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fbit.ly%2Ftraitdough&size=160x160&margin=6" alt="QR code for Trait Dough" />
+      </div>
+      <div class="qr-hint">Opens bit.ly/traitdough &mdash; staff password required</div>
+    </div>
   </div>
 </div>
 
@@ -280,6 +312,11 @@
     document.getElementById('gate-submit').onclick = tryPin;
     document.getElementById('gate-pin').onkeydown = e => { if (e.key === 'Enter') tryPin(); };
   })();
+
+  function toggleQR() {
+    const p = document.getElementById('qr-panel');
+    p.classList.toggle('open');
+  }
 
   function tryPin() {
     if (document.getElementById('gate-pin').value.trim() === 'togetherweclimb') {

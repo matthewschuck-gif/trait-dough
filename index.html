@@ -937,12 +937,20 @@ If a field is unclear or not visible, use an empty string. Never guess.`;
           ]}]
         })
       });
+      if (!res.ok) throw new Error('Proxy ' + res.status + ': ' + await res.text());
       const data = await res.json();
+      if (data.error) throw new Error(JSON.stringify(data.error));
       const raw = data.content?.find(b => b.type === 'text')?.text || '{}';
       const clean = raw.replace(/```json|```/g, '').trim();
       extracted = JSON.parse(clean);
     } catch(e) {
-      console.warn('AI scan failed, falling back to manual', e);
+      console.error('AI scan error:', e);
+      status.innerHTML = '&#x26A0;&#xFE0F; Scan error: ' + e.message + ' — fill in manually';
+      status.className = 'cam-status';
+      document.getElementById('cam-btn-row').style.display = 'flex';
+      document.getElementById('cam-captured').style.display = 'none';
+      showReviewPanel(imageDataUrl, {});
+      return;
     }
 
     document.getElementById('cam-btn-row').style.display = 'flex';
@@ -1308,6 +1316,7 @@ If a field is unclear or not visible, use an empty string. Never guess.`;
 </script>
 </body>
 </html>
+
 
 
 

@@ -9,339 +9,235 @@
   <title>Trait Dough</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     :root {
-      --purple:     #490e6f;
+      --purple: #490e6f;
       --purple-mid: #6b1fa3;
-      --purple-lite:#9b30e0;
-      --gold:       #c47f00;
-      --gold-bright:#e09600;
-      --gold-dim:   rgba(196,127,0,0.12);
-      --bg:         #f0ecf7;
-      --bg2:        #e8e2f4;
-      --card:       #ffffff;
-      --card-hover: #fdfbff;
-      --border:     rgba(73,14,111,0.13);
-      --border-hi:  rgba(73,14,111,0.28);
-      --text:       #17002b;
-      --muted:      #6e5490;
-      --sq-black:   #4b5a6e;
-      --sq-gold:    #b07200;
-      --sq-grey:    #5a6a7a;
-      --sq-purple:  #7c3aed;
-      --radius-sm:  10px;
-      --radius-md:  16px;
-      --radius-lg:  22px;
-      --shadow-sm:  0 2px 8px rgba(73,14,111,0.08);
-      --shadow-md:  0 4px 20px rgba(73,14,111,0.12);
-      --shadow-lg:  0 8px 40px rgba(73,14,111,0.18);
-      --shadow-xl:  0 16px 60px rgba(73,14,111,0.22);
+      --gold: #c47f00;
+      --gold-dim: rgba(196,127,0,0.10);
+      --bg: #f5f3f8;
+      --card: #ffffff;
+      --border: rgba(73,14,111,0.15);
+      --text: #1a0030;
+      --muted: #7c5fa0;
+      --sq-black:  #4b5a6e;
+      --sq-gold:   #b07200;
+      --sq-grey:   #5a6a7a;
+      --sq-purple: #7c3aed;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Geist', system-ui, sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-    /* subtle diagonal noise texture on body */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='rgba(73,14,111,0.03)'/%3E%3C/svg%3E");
-    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Geist', system-ui, sans-serif; }
 
     /* ── GATE ── */
     #gate {
       position: fixed; inset: 0; z-index: 9999;
-      background: linear-gradient(145deg, #f0ecf7 0%, #e4ddf4 100%);
+      background: var(--bg);
       display: flex; align-items: center; justify-content: center;
     }
     .gate-box {
-      text-align: center; padding: 2.25rem 2rem;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      width: calc(100% - 2rem); max-width: 320px;
-      box-shadow: var(--shadow-xl);
-      position: relative; overflow: hidden;
+      text-align: center; padding: 2rem 1.75rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; width: 100%; max-width: 300px;
+      box-shadow: 0 4px 24px rgba(73,14,111,0.1);
     }
-    .gate-box::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 4px;
-      background: linear-gradient(90deg, var(--purple) 0%, var(--purple-lite) 50%, var(--gold-bright) 100%);
-    }
-    .gate-icon { font-size: 3rem; margin-bottom: 0.75rem; display: block; filter: drop-shadow(0 4px 8px rgba(73,14,111,0.2)); }
-    .gate-title {
-      font-size: 1.25rem; font-weight: 900; letter-spacing: 0.06em;
-      text-transform: uppercase; margin-bottom: 0.2rem;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .gate-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .gate-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .gate-title { font-size: 1.1rem; font-weight: 800; color: var(--gold); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .gate-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.25rem; }
     #gate-pin {
-      width: 100%; padding: 0.75rem; border-radius: var(--radius-sm);
-      border: 2px solid var(--border);
-      background: var(--bg); color: var(--text);
+      width: 100%; padding: 0.7rem; border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: #f9f7fc; color: var(--text);
       font-size: 1.5rem; letter-spacing: 0.35em; text-align: center;
       outline: none; margin-bottom: 0.75rem; font-family: inherit;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    #gate-pin:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(73,14,111,0.1); }
+    #gate-pin:focus { border-color: var(--purple); }
     #gate-err { color: #f87171; font-size: 0.78rem; min-height: 1.2em; margin-bottom: 0.5rem; }
     .gate-btn {
-      width: 100%; padding: 0.8rem; border-radius: var(--radius-sm); border: none;
-      background: linear-gradient(135deg, var(--purple-mid) 0%, var(--purple) 100%);
-      color: #fff; font-weight: 900;
-      font-size: 0.95rem; cursor: pointer; letter-spacing: 0.05em; font-family: inherit;
-      transition: opacity 0.2s, transform 0.15s;
-      box-shadow: 0 4px 16px rgba(73,14,111,0.35);
+      width: 100%; padding: 0.7rem; border-radius: 10px; border: none;
+      background: var(--purple); color: #fff; font-weight: 900;
+      font-size: 0.95rem; cursor: pointer; letter-spacing: 0.04em; font-family: inherit;
+      transition: opacity 0.2s;
     }
-    .gate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    .gate-btn:active { transform: translateY(0); }
+    .gate-btn:hover { opacity: 0.88; }
 
-    /* QR toggle */
+    /* QR toggle link */
     .gate-qr-link {
-      display: block; margin-top: 1.25rem;
+      display: block; margin-top: 1.1rem;
       font-size: 0.72rem; color: var(--muted); cursor: pointer;
       letter-spacing: 0.06em; text-transform: uppercase;
       font-weight: 700; transition: color 0.2s; border: none;
       background: none; font-family: inherit; width: 100%;
     }
     .gate-qr-link:hover { color: var(--gold); }
-    .qr-panel { display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .qr-panel {
+      display: none; margin-top: 1.25rem;
+      padding-top: 1.25rem; border-top: 1px solid var(--border);
+    }
     .qr-panel.open { display: block; }
     .qr-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.75rem; }
-    .qr-img-wrap { display: flex; justify-content: center; background: #fff; border-radius: 12px; padding: 12px; }
+    .qr-img-wrap {
+      display: flex; justify-content: center;
+      background: #fff; border-radius: 12px; padding: 12px;
+    }
     .qr-img-wrap img { width: 160px; height: 160px; display: block; }
     .qr-hint { font-size: 0.68rem; color: var(--muted); margin-top: 0.6rem; opacity: 0.75; }
 
     /* ── APP ── */
-    .app { max-width: 520px; margin: 0 auto; padding: 1.75rem 1rem 5rem; position: relative; z-index: 1; }
+    .app { max-width: 520px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 
     /* Header */
-    .header { text-align: center; margin-bottom: 2rem; }
+    .header { text-align: center; margin-bottom: 1.75rem; }
     .header-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(73,14,111,0.08); border: 1px solid rgba(73,14,111,0.2);
-      border-radius: 20px; padding: 4px 14px 4px 9px;
-      font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
-      color: var(--purple-mid); text-transform: uppercase; margin-bottom: 1rem;
+      background: rgba(73,14,111,0.07); border: 1px solid rgba(73,14,111,0.18);
+      border-radius: 20px; padding: 3px 12px 3px 8px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+      color: var(--purple); text-transform: uppercase; margin-bottom: 0.75rem;
     }
-    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-bright); animation: pulse 2s ease-in-out infinite; flex-shrink: 0; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
-    .header h1 {
-      font-size: 2.6rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.3rem;
-      background: linear-gradient(140deg, #490e6f 0%, #8b2fd4 55%, #c47f00 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      filter: drop-shadow(0 2px 4px rgba(73,14,111,0.15));
-    }
-    .header p { font-size: 0.84rem; color: var(--muted); line-height: 1.5; }
+    .badge-dot { background: var(--purple) !important; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+    .header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #490e6f 0%, #7c3aed 60%, #b07200 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header p { font-size: 0.82rem; color: var(--muted); }
 
     /* Tally bar */
-    .tally-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.75rem; }
+    .tally-strip {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
+      margin-bottom: 1.5rem;
+    }
     .tally-card {
-      border-radius: var(--radius-md); padding: 1rem 0.5rem; text-align: center;
-      background: var(--card); border: 1.5px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-      position: relative; overflow: hidden;
-    }
-    .tally-card::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
-      background: var(--sq-color, var(--purple)); opacity: 0.35;
-      transition: opacity 0.2s;
-    }
-    .tally-card.active {
-      border-color: var(--sq-color, var(--gold));
-      box-shadow: 0 0 0 1px var(--sq-color, var(--gold)), var(--shadow-md);
-      transform: translateY(-2px);
-    }
-    .tally-card.active::after { opacity: 1; }
-    .tally-label { font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-    .tally-num { font-size: 1.75rem; font-weight: 900; color: var(--text); line-height: 1; }
-
-    /* Cards */
-    .card {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 1.4rem;
-      margin-bottom: 1rem;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s;
+      border-radius: 12px; padding: 0.75rem 0.5rem; text-align: center;
+      transition: border-color 0.2s;
     }
-    .card:hover { box-shadow: var(--shadow-md); }
-    .card-title {
-      font-size: 10px; font-weight: 800; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 1.1rem;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .card-title::before {
-      content: ''; width: 3px; height: 12px; border-radius: 2px;
-      background: linear-gradient(180deg, var(--purple-mid), var(--gold));
-      display: block;
-    }
+    .tally-card.active { border-color: var(--sq-color, var(--gold)); box-shadow: 0 0 14px var(--sq-glow, rgba(255,225,0,0.2)); }
+    .tally-label { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .tally-num { font-size: 1.5rem; font-weight: 900; color: var(--text); }
 
-    /* Form fields */
-    .field { margin-bottom: 0.95rem; }
-    .field label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    /* Form */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card-title { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .field { margin-bottom: 0.9rem; }
+    .field label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b5a8a; margin-bottom: 4px; }
     .field input, .field select {
-      width: 100%; padding: 0.65rem 0.9rem; border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border);
-      background: var(--bg); color: var(--text);
+      width: 100%; padding: 0.6rem 0.85rem; border-radius: 9px;
+      border: 1.5px solid rgba(73,14,111,0.2);
+      background: #f9f7fc; color: var(--text);
       font-size: 0.9rem; outline: none; font-family: inherit;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color 0.15s;
     }
-    .field input:focus, .field select:focus {
-      border-color: var(--purple); box-shadow: 0 0 0 3px rgba(73,14,111,0.08);
-      background: #fff;
-    }
+    .field input:focus, .field select:focus { border-color: var(--purple); }
     .field select option { background: #fff; color: var(--text); }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
     /* Squad selector */
     .squad-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 4px; }
     .squad-btn {
-      padding: 0.65rem 0.2rem; border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border);
-      background: var(--bg); cursor: pointer;
-      font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
-      color: var(--muted); font-family: inherit;
-      transition: all 0.18s; text-align: center;
-      box-shadow: var(--shadow-sm);
+      padding: 0.6rem 0.25rem; border-radius: 9px; border: 1.5px solid rgba(73,14,111,0.15);
+      background: #f9f7fc; cursor: pointer;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text); font-family: inherit; transition: all 0.15s; text-align: center;
     }
-    .squad-btn:hover {
-      border-color: var(--sq-color); color: var(--sq-color);
-      background: #fff; box-shadow: 0 0 0 1px var(--sq-color), var(--shadow-sm);
-    }
-    .squad-btn.selected {
-      border-color: var(--sq-color); background: #fff;
-      color: var(--sq-color); font-weight: 900;
-      box-shadow: 0 0 0 1.5px var(--sq-color), 0 4px 14px var(--sq-glow);
-    }
+    .squad-btn:hover { border-color: var(--sq-color); background: rgba(73,14,111,0.06); }
+    .squad-btn.selected { border-color: var(--sq-color); background: rgba(73,14,111,0.07); color: var(--sq-color); box-shadow: 0 2px 8px var(--sq-glow); }
 
     /* Submit */
     .submit-btn {
-      width: 100%; padding: 1rem; border-radius: var(--radius-md); border: none;
-      background: linear-gradient(135deg, var(--purple-lite) 0%, var(--purple-mid) 40%, var(--purple) 100%);
-      color: #fff; font-size: 1.05rem; font-weight: 900;
+      width: 100%; padding: 0.9rem; border-radius: 12px; border: none;
+      background: linear-gradient(135deg, var(--purple-mid), var(--purple));
+      color: #fff; font-size: 1rem; font-weight: 900;
       cursor: pointer; letter-spacing: 0.05em; font-family: inherit;
-      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 6px 24px rgba(73,14,111,0.4);
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(73,14,111,0.3);
     }
-    .submit-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 10px 32px rgba(73,14,111,0.45); }
-    .submit-btn:active:not(:disabled) { transform: translateY(0); }
-    .submit-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .submit-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Toast */
     #toast {
-      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px);
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px);
       background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 1rem 1.75rem; text-align: center;
-      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-      z-index: 9999; min-width: 280px;
-      box-shadow: var(--shadow-xl);
-    }
-    #toast::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      border-radius: var(--radius-md) var(--radius-md) 0 0;
-      background: linear-gradient(90deg, var(--purple), var(--gold));
+      border-radius: 14px; padding: 0.9rem 1.5rem; text-align: center;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 100; min-width: 260px; box-shadow: 0 8px 32px rgba(73,14,111,0.15);
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
-    .toast-sq { font-size: 1.05rem; font-weight: 900; margin-bottom: 3px; }
+    .toast-sq { font-size: 1.1rem; font-weight: 900; margin-bottom: 2px; }
     .toast-msg { font-size: 0.8rem; color: var(--muted); }
 
     /* Log table */
     .log-wrap { overflow-x: auto; }
     .log-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-    .log-table th {
-      font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--muted); padding: 7px 10px; text-align: left;
-      border-bottom: 1.5px solid var(--border);
-    }
-    .log-table td { padding: 8px 10px; border-bottom: 1px solid rgba(73,14,111,0.07); color: var(--text); vertical-align: middle; }
+    .log-table th { font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    .log-table td { padding: 7px 10px; border-bottom: 1px solid rgba(73,14,111,0.2); color: var(--text); vertical-align: middle; }
     .log-table tr:last-child td { border-bottom: none; }
-    .log-table tbody tr:hover td { background: rgba(73,14,111,0.025); }
     .sq-pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 800; letter-spacing: 0.06em; }
 
     /* Header image */
     .header-img-wrap {
-      margin: 0 auto 1.25rem; width: 100px; height: 100px;
+      margin: 0 auto 1.25rem; width: 120px; height: 120px;
       border-radius: 50%; overflow: hidden;
-      border: 3px solid rgba(73,14,111,0.15);
-      box-shadow: 0 4px 20px rgba(73,14,111,0.2);
+      border: 2px solid rgba(73,14,111,0.2);
+      box-shadow: 0 4px 16px rgba(73,14,111,0.12);
       position: relative; cursor: pointer;
-      transition: box-shadow 0.2s, transform 0.2s;
     }
-    .header-img-wrap:hover { box-shadow: 0 6px 28px rgba(73,14,111,0.3); transform: scale(1.04); }
     .header-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .header-img-placeholder {
       width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, rgba(73,14,111,0.06), rgba(73,14,111,0.12));
-      color: rgba(73,14,111,0.35); font-size: 2.5rem;
+      background: rgba(73,14,111,0.06); color: rgba(73,14,111,0.3); font-size: 2rem;
     }
     .header-img-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+      position: absolute; inset: 0; background: rgba(0,0,0,0.5);
       display: flex; align-items: center; justify-content: center;
       opacity: 0; transition: opacity 0.2s; border-radius: 50%;
-      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em;
-      text-transform: uppercase; color: #fff;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gold);
     }
     .header-img-wrap:hover .header-img-overlay { opacity: 1; }
     #header-img-input { display: none; }
 
-    /* Scan button */
+    /* Scan QR button */
     .scan-btn {
-      display: flex; align-items: center; gap: 8px;
-      padding: 0.6rem 1.1rem; border-radius: var(--radius-sm);
-      border: 1.5px solid rgba(73,14,111,0.22);
-      background: linear-gradient(135deg, rgba(73,14,111,0.05), rgba(73,14,111,0.09));
-      color: var(--purple-mid);
+      display: flex; align-items: center; gap: 7px;
+      padding: 0.55rem 1rem; border-radius: 9px;
+      border: 1.5px solid rgba(73,14,111,0.25);
+      background: rgba(73,14,111,0.06); color: var(--purple);
       font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em;
       text-transform: uppercase; cursor: pointer; font-family: inherit;
-      transition: all 0.18s; margin-bottom: 0.9rem;
-      box-shadow: var(--shadow-sm);
+      transition: all 0.18s; margin-bottom: 0.75rem;
     }
-    .scan-btn:hover {
-      background: rgba(73,14,111,0.12); border-color: var(--purple);
-      box-shadow: 0 0 0 1px rgba(73,14,111,0.2), var(--shadow-sm);
-    }
+    .scan-btn:hover { background: rgba(73,14,111,0.1); border-color: var(--purple); }
 
     /* Camera modal */
     #camera-modal {
       display: none; position: fixed; inset: 0; z-index: 9000;
-      background: rgba(10,0,20,0.92); align-items: flex-start; justify-content: center;
-      overflow-y: auto; padding: 1.25rem;
-      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,0.92); align-items: flex-start; justify-content: center;
+      overflow-y: auto; padding: 1rem;
     }
     #camera-modal.open { display: flex; }
     .cam-box {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 1.4rem; width: 100%; max-width: 420px;
-      display: flex; flex-direction: column; gap: 1rem;
-      margin: auto; box-shadow: var(--shadow-xl);
+      border-radius: 20px; padding: 1.25rem; width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 0.9rem;
+      margin: auto; box-shadow: 0 8px 32px rgba(73,14,111,0.15);
     }
     .cam-header { display: flex; align-items: flex-start; justify-content: space-between; }
-    .cam-title { font-size: 0.88rem; font-weight: 900; color: var(--purple); letter-spacing: 0.07em; text-transform: uppercase; }
+    .cam-title { font-size: 0.88rem; font-weight: 800; color: var(--purple); letter-spacing: 0.06em; text-transform: uppercase; }
     .cam-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
-    .cam-x {
-      background: rgba(73,14,111,0.07); border: none; color: var(--muted);
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
-    }
-    .cam-x:hover { background: rgba(73,14,111,0.14); color: var(--text); }
-    #cam-video { width: 100%; border-radius: var(--radius-sm); background: #000; display: block; max-height: 260px; object-fit: cover; }
+    .cam-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0; line-height: 1; }
+    .cam-x:hover { color: var(--text); }
+    #cam-video { width: 100%; border-radius: 12px; background: #000; display: block; max-height: 260px; object-fit: cover; }
     #cam-canvas { display: none; }
     .cam-status { font-size: 0.78rem; color: var(--muted); text-align: center; min-height: 1.2em; }
     .cam-status.found { color: #22c55e; }
 
     /* Review panel */
     .cam-student-card {
-      background: rgba(73,14,111,0.04); border: 1px solid rgba(73,14,111,0.12);
-      border-radius: var(--radius-sm); padding: 0.85rem 1rem;
+      background: rgba(73,14,111,0.05); border: 1px solid rgba(73,14,111,0.15);
+      border-radius: 12px; padding: 0.85rem 1rem;
     }
     .cam-student-name { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
     .cam-student-meta { font-size: 0.78rem; color: var(--muted); }
@@ -350,30 +246,31 @@
       font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
       margin-left: 6px; vertical-align: middle;
     }
-    .cam-field label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .cam-field label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b5a8a; margin-bottom: 4px; }
     .cam-field select, .cam-field input {
-      width: 100%; padding: 0.55rem 0.75rem; border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border); background: var(--bg); color: var(--text);
-      font-size: 0.85rem; outline: none; font-family: inherit; transition: border-color 0.15s;
+      width: 100%; padding: 0.55rem 0.75rem; border-radius: 9px;
+      border: 1.5px solid rgba(73,14,111,0.2);
+      background: #f9f7fc; color: var(--text);
+      font-size: 0.85rem; outline: none; font-family: inherit;
+      transition: border-color 0.15s;
     }
-    .cam-field select:focus, .cam-field input:focus { border-color: var(--purple); background: #fff; }
+    .cam-field select:focus, .cam-field input:focus { border-color: var(--purple); }
     .cam-field select option { background: #fff; color: var(--text); }
     .cam-review-actions { display: flex; gap: 8px; }
     .cam-scan-next {
-      flex: 1; padding: 0.65rem; border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border); background: transparent;
+      flex: 1; padding: 0.6rem; border-radius: 10px;
+      border: 1px solid var(--border); background: transparent;
       color: var(--muted); font-family: inherit; font-size: 0.8rem; font-weight: 700;
       cursor: pointer; transition: all 0.15s;
     }
-    .cam-scan-next:hover { border-color: var(--purple); color: var(--purple); background: rgba(73,14,111,0.04); }
+    .cam-scan-next:hover { border-color: var(--purple); color: var(--purple); }
     .cam-use-this {
-      flex: 1; padding: 0.65rem; border-radius: var(--radius-sm); border: none;
-      background: linear-gradient(135deg, var(--purple-mid), var(--purple));
-      color: #fff; font-family: inherit; font-size: 0.8rem; font-weight: 900;
-      cursor: pointer; transition: opacity 0.15s, transform 0.1s;
-      box-shadow: 0 3px 12px rgba(73,14,111,0.3);
+      flex: 1; padding: 0.6rem; border-radius: 10px; border: none;
+      background: var(--purple); color: #fff;
+      font-family: inherit; font-size: 0.8rem; font-weight: 900;
+      cursor: pointer; transition: opacity 0.15s;
     }
-    .cam-use-this:hover { opacity: 0.9; transform: translateY(-1px); }
+    .cam-use-this:hover { opacity: 0.88; }
 
     /* Queue */
     .cam-queue-header {
@@ -381,71 +278,76 @@
       border-top: 1px solid var(--border); padding-top: 0.75rem;
     }
     .cam-queue-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-    .cam-queue-clear { background: none; border: none; color: var(--muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.15s; }
+    .cam-queue-clear { background: none; border: none; color: var(--muted); font-size: 0.7rem; font-weight: 700; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; }
     .cam-queue-clear:hover { color: #f87171; }
     .cam-queue-list { display: flex; flex-direction: column; gap: 6px; }
     .cam-queue-item {
       display: flex; align-items: center; gap: 8px;
-      background: var(--bg); border-radius: var(--radius-sm); padding: 7px 10px;
+      background: rgba(73,14,111,0.04); border-radius: 9px; padding: 6px 10px;
       border: 1px solid var(--border);
     }
     .cam-queue-item-info { flex: 1; font-size: 0.78rem; }
     .cam-queue-item-name { font-weight: 700; color: var(--text); }
     .cam-queue-item-trait { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
-    .cam-queue-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px; transition: color 0.15s; }
+    .cam-queue-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
     .cam-queue-remove:hover { color: #f87171; }
 
     .cam-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 0.75rem; }
-    .cam-close {
-      flex: 1; padding: 0.7rem; border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border); background: transparent;
-      color: var(--muted); font-family: inherit; font-size: 0.82rem; font-weight: 700;
-      cursor: pointer; transition: all 0.15s;
-    }
-    .cam-close:hover { border-color: var(--purple); color: var(--purple); background: rgba(73,14,111,0.04); }
+    .cam-close { flex: 1; padding: 0.65rem; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .cam-close:hover { border-color: var(--purple); color: var(--purple); }
     .cam-submit-all {
-      flex: 2; padding: 0.7rem; border-radius: var(--radius-sm); border: none;
-      background: linear-gradient(135deg, var(--purple-lite) 0%, var(--purple-mid) 50%, var(--purple) 100%);
-      color: #fff; font-family: inherit; font-size: 0.85rem; font-weight: 900;
-      cursor: pointer; transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.04em;
-      box-shadow: 0 4px 16px rgba(73,14,111,0.35);
+      flex: 2; padding: 0.65rem; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--purple-mid), var(--purple));
+      color: var(--gold); font-family: inherit; font-size: 0.82rem; font-weight: 900;
+      cursor: pointer; transition: opacity 0.15s; letter-spacing: 0.04em;
     }
-    .cam-submit-all:hover { opacity: 0.9; transform: translateY(-1px); }
-    .cam-submit-all:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+    .cam-submit-all:hover { opacity: 0.88; }
+    .cam-submit-all:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Master list */
     .master-toggle {
-      width: 100%; padding: 0.8rem; border-radius: var(--radius-sm); margin-bottom: 1rem;
-      border: 1.5px solid var(--border); background: var(--card);
+      width: 100%; padding: 0.7rem; border-radius: 10px; margin-bottom: 1rem;
+      border: 1px solid var(--border); background: var(--card);
       color: var(--muted); font-family: inherit; font-size: 0.8rem;
-      font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
-      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm);
+      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
     }
-    .master-toggle:hover { border-color: var(--purple-mid); color: var(--purple); background: var(--card-hover); box-shadow: var(--shadow-md); }
+    .master-toggle:hover { border-color: rgba(73,14,111,0.4); color: var(--purple); }
     #masterList { display: none; }
     #masterList.open { display: block; }
     .export-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
     .export-bar span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-    .csv-btn {
-      padding: 0.45rem 1rem; border-radius: 8px; border: none;
-      background: linear-gradient(135deg, var(--purple-mid), var(--purple));
-      color: #fff; font-weight: 900; font-size: 0.72rem; letter-spacing: 0.06em;
-      cursor: pointer; font-family: inherit; transition: opacity 0.2s;
-      box-shadow: 0 2px 8px rgba(73,14,111,0.25);
-    }
+    .csv-btn { padding: 0.45rem 1rem; border-radius: 8px; border: none; background: var(--purple); color: #fff; font-weight: 900; font-size: 0.72rem; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
     .csv-btn:hover { opacity: 0.85; }
+    .email-btn { padding: 0.45rem 1rem; border-radius: 8px; border: 1.5px solid var(--purple); background: transparent; color: var(--purple); font-weight: 900; font-size: 0.72rem; letter-spacing: 0.06em; cursor: pointer; font-family: inherit; transition: all 0.2s; margin-left: 6px; }
+    .email-btn:hover { background: rgba(73,14,111,0.08); }
 
-    .ocr-spinner {
-      width: 14px; height: 14px;
-      border: 2px solid rgba(73,14,111,0.12);
-      border-top-color: var(--purple);
-      border-radius: 50%;
-      animation: ocr-spin 0.7s linear infinite;
-      flex-shrink: 0;
+    /* Email modal */
+    #email-modal { display: none; position: fixed; inset: 0; z-index: 9500; background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 1rem; }
+    #email-modal.open { display: flex; }
+    .email-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.5rem; width: 100%; max-width: 340px; box-shadow: 0 8px 32px rgba(73,14,111,0.15); }
+    .email-box-title { font-size: 0.9rem; font-weight: 800; color: var(--purple); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .email-box-sub { font-size: 0.72rem; color: var(--muted); margin-bottom: 1rem; }
+    .email-input { width: 100%; padding: 0.65rem 0.85rem; border-radius: 9px; border: 1.5px solid rgba(73,14,111,0.2); background: #f9f7fc; color: var(--text); font-size: 0.9rem; outline: none; font-family: inherit; transition: border-color 0.15s; margin-bottom: 0.85rem; }
+    .email-input:focus { border-color: var(--purple); }
+    .email-actions { display: flex; gap: 8px; }
+    .email-cancel { flex: 1; padding: 0.65rem; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .email-cancel:hover { border-color: var(--purple); color: var(--purple); }
+    .email-send { flex: 2; padding: 0.65rem; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--purple-mid), var(--purple)); color: #fff; font-family: inherit; font-size: 0.82rem; font-weight: 900; cursor: pointer; transition: opacity 0.15s; letter-spacing: 0.04em; }
+    .email-send:hover { opacity: 0.88; }
+
+    .cam-sq-btn.selected { border-color: var(--sq-color); background: rgba(73,14,111,0.07); color: var(--sq-color); box-shadow: 0 2px 8px var(--sq-glow); }
+    .cam-grade-btn.selected { border-color: var(--sq-color); background: rgba(73,14,111,0.07); color: var(--purple); box-shadow: 0 2px 8px var(--sq-glow); }
+
+    .cam-trait-btn {
+      padding: 0.55rem 0.75rem; border-radius: 9px;
+      border: 1.5px solid rgba(73,14,111,0.15);
+      background: #f9f7fc; color: var(--text);
+      font-size: 0.78rem; font-weight: 600; text-align: left;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
     }
-    @keyframes ocr-spin { to { transform: rotate(360deg); } }
-
-    .cam-sq-btn.selected { border-color: var(--sq-color); background: #fff; color: var(--sq-color); box-shadow: 0 0 0 1.5px var(--sq-color), 0 3px 10px var(--sq-glow); }
+    .cam-trait-btn:hover { border-color: var(--gold); background: rgba(196,127,0,0.06); }
+    .cam-trait-btn.selected { border-color: var(--gold); background: rgba(196,127,0,0.1); color: var(--gold); font-weight: 800; box-shadow: 0 2px 8px rgba(196,127,0,0.2); }
   </style>
 </head>
 <body>
@@ -579,7 +481,7 @@
     <div class="card">
       <div class="export-bar">
         <span id="masterCount">All submissions</span>
-        <button class="csv-btn" onclick="exportCSV()">Download CSV</button>
+        <div style="display:flex;align-items:center"><button class="csv-btn" onclick="exportCSV()">Download CSV</button><button class="email-btn" onclick="openEmailModal()">Email CSV</button></div>
       </div>
       <div class="log-wrap">
         <table class="log-table" id="masterTable">
@@ -617,16 +519,6 @@
         <button class="cam-use-this" id="cam-capture-btn" onclick="capturePhoto()" style="flex:1">📸 Take Photo</button>
         <button class="cam-scan-next" id="cam-retake-btn" onclick="retakePhoto()" style="display:none;flex:1">🔄 Retake</button>
       </div>
-      <!-- OCR progress -->
-      <div id="cam-ocr-status" style="display:none;margin-top:8px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="ocr-spinner"></div>
-          <span style="font-size:0.78rem;color:var(--muted)" id="cam-ocr-text">Scanning image…</span>
-        </div>
-        <div style="height:3px;background:rgba(73,14,111,0.1);border-radius:2px;margin-top:6px;overflow:hidden">
-          <div id="cam-ocr-bar" style="height:100%;width:0%;background:var(--purple);border-radius:2px;transition:width 0.3s"></div>
-        </div>
-      </div>
       <!-- Or upload a file -->
       <div style="text-align:center;margin-top:10px">
         <button style="background:none;border:none;color:var(--muted);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;font-family:inherit" onclick="document.getElementById('cam-file-input').click()">Or upload a photo</button>
@@ -634,11 +526,12 @@
       </div>
     </div>
 
-    <!-- Review panel (shown after OCR) -->
+    <!-- Review panel (shown after photo) -->
     <div id="cam-review-panel" style="display:none">
-      <div id="cam-ocr-result" style="background:rgba(73,14,111,0.05);border:1px solid rgba(73,14,111,0.15);border-radius:12px;padding:0.85rem 1rem;margin-bottom:0.6rem">
-        <div style="font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Scanner Detected</div>
-        <div id="cam-ocr-detected" style="font-size:0.82rem;color:var(--text);line-height:1.5"></div>
+      <!-- Show captured image as reference -->
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(73,14,111,0.15);margin-bottom:0.6rem">
+        <img id="cam-review-img" style="width:100%;display:block;max-height:220px;object-fit:contain;background:#f5f3f8" />
+        <div style="padding:6px 10px;background:rgba(73,14,111,0.05);font-size:0.68rem;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;text-align:center">Reference — select what's circled below</div>
       </div>
       <div class="cam-field">
         <label>Student Name *</label>
@@ -646,22 +539,26 @@
       </div>
       <div class="cam-field" style="margin-top:6px">
         <label>Grade *</label>
-        <select id="cam-grade"><option value="">Grade</option><option value="7">7th</option><option value="8">8th</option></select>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="squad-btn cam-grade-btn" data-grade="7" style="flex:1;--sq-color:var(--purple);--sq-glow:rgba(73,14,111,0.25)">7th</button>
+          <button type="button" class="squad-btn cam-grade-btn" data-grade="8" style="flex:1;--sq-color:var(--purple);--sq-glow:rgba(73,14,111,0.25)">8th</button>
+        </div>
+        <input type="hidden" id="cam-grade" />
       </div>
       <div class="cam-field" style="margin-top:6px">
-        <label>Trait Demonstrated *</label>
-        <select id="cam-trait">
-          <option value="">Select a trait…</option>
-          <option>Continual Learning &amp; Growth Mindset</option>
-          <option>Critical Thinking &amp; Problem Solving</option>
-          <option>Creativity &amp; Innovation</option>
-          <option>Adaptability &amp; Flexibility</option>
-          <option>Resilience &amp; Grit</option>
-          <option>Communication &amp; Empathy</option>
-          <option>Collaboration &amp; Teamwork</option>
-          <option>Honesty, Integrity, &amp; Responsibility</option>
-          <option>Healthy Living, Wellness, &amp; Self-Awareness</option>
-        </select>
+        <label>Trait Demonstrated * <span style="font-weight:400;text-transform:none;font-size:9px;color:var(--muted)">(tap the circled trait)</span></label>
+        <div style="display:flex;flex-direction:column;gap:5px" id="cam-trait-list">
+          <button type="button" class="cam-trait-btn" data-trait="Continual Learning &amp; Growth Mindset">Continual Learning &amp; Growth Mindset</button>
+          <button type="button" class="cam-trait-btn" data-trait="Critical Thinking &amp; Problem Solving">Critical Thinking &amp; Problem Solving</button>
+          <button type="button" class="cam-trait-btn" data-trait="Creativity &amp; Innovation">Creativity &amp; Innovation</button>
+          <button type="button" class="cam-trait-btn" data-trait="Adaptability &amp; Flexibility">Adaptability &amp; Flexibility</button>
+          <button type="button" class="cam-trait-btn" data-trait="Resilience &amp; Grit">Resilience &amp; Grit</button>
+          <button type="button" class="cam-trait-btn" data-trait="Communication &amp; Empathy">Communication &amp; Empathy</button>
+          <button type="button" class="cam-trait-btn" data-trait="Collaboration &amp; Teamwork">Collaboration &amp; Teamwork</button>
+          <button type="button" class="cam-trait-btn" data-trait="Honesty, Integrity, &amp; Responsibility">Honesty, Integrity, &amp; Responsibility</button>
+          <button type="button" class="cam-trait-btn" data-trait="Healthy Living, Wellness, &amp; Self-Awareness">Healthy Living, Wellness, &amp; Self-Awareness</button>
+        </div>
+        <input type="hidden" id="cam-trait" />
       </div>
       <div class="cam-field" style="margin-top:6px">
         <label>Student's Squad *</label>
@@ -695,6 +592,20 @@
     <div class="cam-actions">
       <button class="cam-close" onclick="closeCamera()">Cancel</button>
       <button class="cam-submit-all" id="cam-submit-all" onclick="submitQueue()" style="display:none">Submit All (0)</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Email CSV modal -->
+<div id="email-modal">
+  <div class="email-box">
+    <div class="email-box-title">Email CSV Export</div>
+    <div class="email-box-sub">Opens your mail app with the data ready to send.</div>
+    <input class="email-input" id="email-to" type="email" placeholder="recipient@example.com" />
+    <div class="email-actions">
+      <button class="email-cancel" onclick="closeEmailModal()">Cancel</button>
+      <button class="email-send" onclick="sendEmailCSV()">Open in Mail &#x2709;&#xFE0F;</button>
     </div>
   </div>
 </div>
@@ -861,7 +772,6 @@
 
   // ── Camera Image Scanner ──
   let camStream     = null;
-  let currentScan   = null;
   let scanQueue     = [];
   let camSelectedSquad = '';
 
@@ -875,18 +785,28 @@
     };
   });
 
-  // Trait keywords for OCR matching
-  const TRAIT_KEYWORDS = [
-    { trait: 'Continual Learning & Growth Mindset', keys: ['continual','learning','growth','mindset'] },
-    { trait: 'Critical Thinking & Problem Solving', keys: ['critical','thinking','problem','solving'] },
-    { trait: 'Creativity & Innovation',             keys: ['creativity','innovation','creative'] },
-    { trait: 'Adaptability & Flexibility',          keys: ['adaptability','flexibility','adaptable','flexible'] },
-    { trait: 'Resilience & Grit',                   keys: ['resilience','grit','resilient'] },
-    { trait: 'Communication & Empathy',             keys: ['communication','empathy','communicate'] },
-    { trait: 'Collaboration & Teamwork',            keys: ['collaboration','teamwork','collaborate'] },
-    { trait: 'Honesty, Integrity, & Responsibility',keys: ['honesty','integrity','responsibility','honest','responsible'] },
-    { trait: 'Healthy Living, Wellness, & Self-Awareness', keys: ['healthy','wellness','self-awareness','self','awareness','living'] },
-  ];
+  let camSelectedGrade = '';
+  let camSelectedTrait = '';
+
+  // Grade buttons inside camera modal
+  document.querySelectorAll('.cam-grade-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.cam-grade-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      camSelectedGrade = btn.dataset.grade;
+      document.getElementById('cam-grade').value = camSelectedGrade;
+    };
+  });
+
+  // Trait buttons inside camera modal
+  document.querySelectorAll('.cam-trait-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.cam-trait-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      camSelectedTrait = btn.dataset.trait;
+      document.getElementById('cam-trait').value = camSelectedTrait;
+    };
+  });
 
   async function openCamera() {
     document.getElementById('camera-modal').classList.add('open');
@@ -899,7 +819,6 @@
     document.getElementById('cam-video').style.display = 'block';
     document.getElementById('cam-capture-btn').style.display = 'block';
     document.getElementById('cam-retake-btn').style.display = 'none';
-    document.getElementById('cam-ocr-status').style.display = 'none';
     try {
       camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       const video = document.getElementById('cam-video');
@@ -927,24 +846,15 @@
     ctx.drawImage(video, 0, 0);
 
     const dataUrl = canvas.toDataURL('image/png');
-    const captured = document.getElementById('cam-captured');
-    captured.src = dataUrl;
-    captured.style.display = 'block';
-    video.style.display = 'none';
-
-    document.getElementById('cam-capture-btn').style.display = 'none';
-    document.getElementById('cam-retake-btn').style.display = 'block';
-    document.getElementById('cam-status').textContent = '';
-
-    runOCR(dataUrl);
+    showReviewPanel(dataUrl);
   }
 
   function retakePhoto() {
+    showScanPanel();
     document.getElementById('cam-captured').style.display = 'none';
     document.getElementById('cam-video').style.display = 'block';
     document.getElementById('cam-capture-btn').style.display = 'block';
     document.getElementById('cam-retake-btn').style.display = 'none';
-    document.getElementById('cam-ocr-status').style.display = 'none';
     document.getElementById('cam-status').textContent = 'Position the Trait Dough bill in view, then tap capture';
   }
 
@@ -953,154 +863,60 @@
     if (!file) return;
     if (!document.getElementById('camera-modal').classList.contains('open')) {
       document.getElementById('camera-modal').classList.add('open');
-      showScanPanel();
       updateQueueUI();
     }
     const reader = new FileReader();
     reader.onload = e => {
-      const dataUrl = e.target.result;
-      const captured = document.getElementById('cam-captured');
-      captured.src = dataUrl;
-      captured.style.display = 'block';
-      document.getElementById('cam-video').style.display = 'none';
-      document.getElementById('cam-capture-btn').style.display = 'none';
-      document.getElementById('cam-retake-btn').style.display = 'block';
-      document.getElementById('cam-status').textContent = '';
-      runOCR(dataUrl);
+      showReviewPanel(e.target.result);
     };
     reader.readAsDataURL(file);
     input.value = '';
   }
 
-  async function runOCR(imageSource) {
-    const ocrStatus = document.getElementById('cam-ocr-status');
-    const ocrText   = document.getElementById('cam-ocr-text');
-    const ocrBar    = document.getElementById('cam-ocr-bar');
-    ocrStatus.style.display = 'block';
-    ocrText.textContent = 'Scanning image for text…';
-    ocrBar.style.width = '10%';
-
-    try {
-      const result = await Tesseract.recognize(imageSource, 'eng', {
-        logger: m => {
-          if (m.status === 'recognizing text') {
-            ocrBar.style.width = Math.round(m.progress * 100) + '%';
-          }
-        }
-      });
-
-      ocrBar.style.width = '100%';
-      const text = result.data.text || '';
-      ocrText.textContent = text.trim() ? 'Text detected — review below' : 'No text found — fill in manually';
-      processOCRResult(text);
-    } catch(e) {
-      ocrText.textContent = 'Scan failed — fill in the form manually';
-      ocrBar.style.width = '0%';
-      showReviewPanel({ name: '', grade: '', squad: '', trait: '', ocrText: '' });
-    }
-  }
-
-  function processOCRResult(rawText) {
-    const lower = rawText.toLowerCase();
-    const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
-    // Try to match a trait
-    let bestTrait = '';
-    let bestScore = 0;
-    TRAIT_KEYWORDS.forEach(tk => {
-      let score = 0;
-      tk.keys.forEach(k => { if (lower.includes(k)) score++; });
-      if (score > bestScore) { bestScore = score; bestTrait = tk.trait; }
-    });
-
-    // Try to find a student name — look for lines that don't match traits or common form labels
-    const skipWords = ['trait','dough','name','student','teacher','staff','date','grade','squad','circle','ems','ephrata','middle','school','mountaineer'];
-    let candidateName = '';
-    for (const line of lines) {
-      const lineLower = line.toLowerCase();
-      const isTraitLine = TRAIT_KEYWORDS.some(tk => tk.keys.some(k => lineLower.includes(k)));
-      const isLabel = skipWords.some(w => lineLower.includes(w));
-      if (!isTraitLine && !isLabel && line.length > 2 && line.length < 40 && /[a-zA-Z]/.test(line)) {
-        candidateName = line;
-        break;
-      }
-    }
-
-    // Try to detect grade
-    let grade = '';
-    if (/\b7th\b|\bgrade\s*7\b|\b7\s*grade\b/i.test(rawText)) grade = '7';
-    else if (/\b8th\b|\bgrade\s*8\b|\b8\s*grade\b/i.test(rawText)) grade = '8';
-
-    // Try to detect squad
-    let squad = '';
-    const squadTest = lower.replace(/[^a-z]/g,' ');
-    if (/\bgold\b/.test(squadTest)) squad = 'GOLD';
-    else if (/\bpurple\b/.test(squadTest)) squad = 'PURPLE';
-    else if (/\bgrey\b|\bgray\b/.test(squadTest)) squad = 'GREY';
-    else if (/\bblack\b/.test(squadTest)) squad = 'BLACK';
-
-    showReviewPanel({
-      name: candidateName,
-      grade: grade,
-      squad: squad,
-      trait: bestScore >= 1 ? bestTrait : '',
-      ocrText: rawText.trim()
-    });
-  }
-
-  function showReviewPanel(data) {
-    currentScan = data;
+  function showReviewPanel(imageDataUrl) {
     document.getElementById('cam-scan-panel').style.display = 'none';
     document.getElementById('cam-review-panel').style.display = 'block';
-    document.getElementById('cam-title').textContent = 'Review & Complete';
-    document.getElementById('cam-sub').textContent = 'Confirm or edit the detected info, then submit';
+    document.getElementById('cam-title').textContent = 'Fill In From Bill';
+    document.getElementById('cam-sub').textContent = 'Look at the photo and select what\'s circled';
 
-    // Show raw OCR text
-    const detected = document.getElementById('cam-ocr-detected');
-    if (data.ocrText) {
-      const preview = data.ocrText.length > 200 ? data.ocrText.slice(0,200) + '…' : data.ocrText;
-      detected.innerHTML = '<span style="font-style:italic;color:var(--muted)">"' +
-        preview.replace(/\n/g, ' · ').replace(/</g,'&lt;') + '"</span>';
-      document.getElementById('cam-ocr-result').style.display = 'block';
-    } else {
-      document.getElementById('cam-ocr-result').style.display = 'none';
-    }
+    // Show captured image as reference
+    document.getElementById('cam-review-img').src = imageDataUrl;
 
-    // Fill in detected values
-    document.getElementById('cam-student').value = data.name || '';
-    document.getElementById('cam-grade').value = data.grade || '';
-    document.getElementById('cam-trait').value = data.trait || '';
+    // Reset all fields
+    document.getElementById('cam-student').value = '';
     document.getElementById('cam-notes').value = '';
+    camSelectedGrade = '';
+    camSelectedTrait = '';
+    camSelectedSquad = '';
+    document.getElementById('cam-grade').value = '';
+    document.getElementById('cam-trait').value = '';
+    document.getElementById('cam-squad').value = '';
+    document.querySelectorAll('.cam-grade-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.cam-trait-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.cam-sq-btn').forEach(b => b.classList.remove('selected'));
 
-    // Set squad if detected
-    camSelectedSquad = data.squad || '';
-    document.getElementById('cam-squad').value = camSelectedSquad;
-    document.querySelectorAll('.cam-sq-btn').forEach(b => {
-      b.classList.toggle('selected', b.dataset.squad === camSelectedSquad);
-    });
+    // Focus student name input
+    setTimeout(() => document.getElementById('cam-student').focus(), 200);
   }
 
   function addToQueueAndRescan() {
     const name  = document.getElementById('cam-student').value.trim();
-    const grade = document.getElementById('cam-grade').value;
-    const trait = document.getElementById('cam-trait').value;
+    const grade = camSelectedGrade;
+    const trait = camSelectedTrait;
     const squad = camSelectedSquad;
     if (!name) { document.getElementById('cam-student').focus(); return; }
-    if (!grade) { document.getElementById('cam-grade').focus(); return; }
-    if (!trait) { document.getElementById('cam-trait').focus(); return; }
+    if (!grade) { showToast('Select grade', 'Tap 7th or 8th.', '#f87171'); return; }
+    if (!trait) { showToast('Select trait', 'Tap the circled trait.', '#f87171'); return; }
     if (!squad) { showToast('Select squad', 'Pick the student\'s squad color.', '#f87171'); return; }
     const notes = document.getElementById('cam-notes').value.trim();
     scanQueue.push({ name, grade, squad, trait, notes });
-    currentScan = null;
-    camSelectedSquad = '';
     updateQueueUI();
     showScanPanel();
-    // Restart camera
+    // Restart camera view
     document.getElementById('cam-captured').style.display = 'none';
     document.getElementById('cam-video').style.display = 'block';
     document.getElementById('cam-capture-btn').style.display = 'block';
     document.getElementById('cam-retake-btn').style.display = 'none';
-    document.getElementById('cam-ocr-status').style.display = 'none';
     const status = document.getElementById('cam-status');
     if (camStream) {
       status.textContent = 'Position the next Trait Dough bill, then tap capture';
@@ -1111,17 +927,15 @@
 
   async function addToQueueAndDone() {
     const name  = document.getElementById('cam-student').value.trim();
-    const grade = document.getElementById('cam-grade').value;
-    const trait = document.getElementById('cam-trait').value;
+    const grade = camSelectedGrade;
+    const trait = camSelectedTrait;
     const squad = camSelectedSquad;
     if (!name) { document.getElementById('cam-student').focus(); return; }
-    if (!grade) { document.getElementById('cam-grade').focus(); return; }
-    if (!trait) { document.getElementById('cam-trait').focus(); return; }
+    if (!grade) { showToast('Select grade', 'Tap 7th or 8th.', '#f87171'); return; }
+    if (!trait) { showToast('Select trait', 'Tap the circled trait.', '#f87171'); return; }
     if (!squad) { showToast('Select squad', 'Pick the student\'s squad color.', '#f87171'); return; }
     const notes = document.getElementById('cam-notes').value.trim();
     scanQueue.push({ name, grade, squad, trait, notes });
-    currentScan = null;
-    camSelectedSquad = '';
     updateQueueUI();
     await submitQueue();
   }
@@ -1351,6 +1165,51 @@
     a.href = url; a.download = 'trait-dough-submissions.csv';
     a.click(); URL.revokeObjectURL(url);
   }
+
+  // ── Email CSV ──
+  function openEmailModal() {
+    if (!allRows.length) { showToast('No data', 'Load submissions first (click View All).', '#f87171'); return; }
+    document.getElementById('email-modal').classList.add('open');
+    setTimeout(() => document.getElementById('email-to').focus(), 100);
+  }
+
+  function closeEmailModal() {
+    document.getElementById('email-modal').classList.remove('open');
+  }
+
+  function sendEmailCSV() {
+    const to = document.getElementById('email-to').value.trim();
+    if (!to) { document.getElementById('email-to').focus(); return; }
+
+    const headers = ['Date','Time','Staff Name','Student Name','Grade','Squad','Trait','Notes'];
+    const csvRows = allRows.map(r => {
+      const dt = new Date(r.created_at);
+      return [
+        dt.toLocaleDateString(),
+        dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        r.staff_name, r.student_name, r.grade, r.squad, r.trait,
+        (r.notes || '').replace(/,/g, ';')
+      ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
+    });
+    const csv = [headers.join(','), ...csvRows].join('\n');
+
+    const subject = encodeURIComponent('Trait Dough Submissions — ' + new Date().toLocaleDateString());
+    const fullBody  = encodeURIComponent('Trait Dough CSV Export (' + allRows.length + ' submissions):\n\n' + csv);
+    const shortBody = encodeURIComponent('See the attached trait-dough-submissions.csv file (downloaded automatically).');
+
+    const testLink = 'mailto:' + encodeURIComponent(to) + '?subject=' + subject + '&body=' + fullBody;
+
+    if (testLink.length > 8000) {
+      exportCSV();
+      window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + subject + '&body=' + shortBody;
+      showToast('CSV downloaded', 'Attach the file to the email draft that opened.', '#c47f00');
+    } else {
+      window.location.href = testLink;
+      showToast('Opening mail app…', 'CSV data is in the email body.', '#22c55e');
+    }
+    closeEmailModal();
+  }
 </script>
 </body>
 </html>
+

@@ -856,6 +856,7 @@
     document.getElementById('cam-video').style.display = 'block';
     document.getElementById('cam-capture-btn').style.display = 'block';
     document.getElementById('cam-retake-btn').style.display = 'none';
+    document.getElementById('cam-btn-row').style.display = 'flex';
     document.getElementById('cam-status').textContent = 'Position the Trait Dough bill in view, then tap capture';
   }
 
@@ -875,14 +876,21 @@
   }
 
   async function scanBill(imageDataUrl) {
-    // Show scan panel with loading state while AI reads the bill
+    // Show the captured image immediately with an AI-reading overlay
     document.getElementById('cam-scan-panel').style.display = 'block';
     document.getElementById('cam-review-panel').style.display = 'none';
     document.getElementById('cam-video').style.display = 'none';
     document.getElementById('cam-capture-btn').style.display = 'none';
     document.getElementById('cam-retake-btn').style.display = 'none';
+    document.getElementById('cam-btn-row').style.display = 'none';
+
+    // Show the captured image as a preview
+    const captured = document.getElementById('cam-captured');
+    captured.src = imageDataUrl;
+    captured.style.display = 'block';
+
     const status = document.getElementById('cam-status');
-    status.textContent = 'Reading bill with AI…';
+    status.innerHTML = '<span style="animation:pulse 1.2s ease-in-out infinite;display:inline-block">🤖</span> Reading bill with AI…';
     status.className = 'cam-status';
 
     const TRAITS = [
@@ -937,6 +945,8 @@ If a field is unclear or not visible, use an empty string. Never guess.`;
       console.warn('AI scan failed, falling back to manual', e);
     }
 
+    document.getElementById('cam-btn-row').style.display = 'flex';
+    document.getElementById('cam-captured').style.display = 'none';
     showReviewPanel(imageDataUrl, extracted);
   }
 
@@ -1298,5 +1308,6 @@ If a field is unclear or not visible, use an empty string. Never guess.`;
 </script>
 </body>
 </html>
+
 
 

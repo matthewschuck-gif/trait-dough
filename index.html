@@ -945,11 +945,14 @@ If a field is unclear or not visible, use an empty string. Never guess.`;
       extracted = JSON.parse(clean);
     } catch(e) {
       console.error('AI scan error:', e);
-      status.innerHTML = '&#x26A0;&#xFE0F; Scan error: ' + e.message + ' — fill in manually';
-      status.className = 'cam-status';
-      document.getElementById('cam-btn-row').style.display = 'flex';
-      document.getElementById('cam-captured').style.display = 'none';
-      showReviewPanel(imageDataUrl, {});
+      const errMsg = e.message || 'Unknown error';
+      showToast('Scan failed: ' + errMsg, 'Fill in the form manually below.', '#f87171');
+      status.innerHTML = '<span style="color:#f87171">&#x26A0;&#xFE0F; ' + errMsg + '</span><br><button onclick="window._scanFallback()" style="margin-top:6px;padding:0.4rem 0.9rem;border-radius:8px;border:none;background:var(--purple);color:#fff;font-weight:800;font-size:0.78rem;cursor:pointer;font-family:inherit">Fill In Manually &rarr;</button>';
+      window._scanFallback = () => {
+        document.getElementById('cam-btn-row').style.display = 'flex';
+        document.getElementById('cam-captured').style.display = 'none';
+        showReviewPanel(imageDataUrl, {});
+      };
       return;
     }
 
@@ -1316,6 +1319,7 @@ If a field is unclear or not visible, use an empty string. Never guess.`;
 </script>
 </body>
 </html>
+
 
 
 

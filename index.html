@@ -619,6 +619,7 @@
   const SB_URL  = 'https://yvutgnpgnthvnonhgdux.supabase.co';
   const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dXRnbnBnbnRodm5vbmhnZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDIzNzgsImV4cCI6MjA5NTMxODM3OH0.bX5eI0EgnlQEjThX0CVpWFj1SNI726OxBwKpTgAv2Ak';
   const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+  const PROXY_URL = SB_URL + '/functions/v1/anthropic-proxy';
   const WRITE_H = { ...HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' };
 
   const SQ_COLORS = { BLACK: 'var(--sq-black)', GOLD: 'var(--sq-gold)', GREY: 'var(--sq-grey)', PURPLE: 'var(--sq-purple)' };
@@ -837,7 +838,7 @@
     document.getElementById('cam-sub').textContent = 'Take a photo of the Trait Dough bill';
   }
 
-  function capturePhoto() {
+  async function capturePhoto() {
     const video  = document.getElementById('cam-video');
     const canvas = document.getElementById('cam-canvas');
     const ctx    = canvas.getContext('2d');
@@ -845,8 +846,8 @@
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
 
-    const dataUrl = canvas.toDataURL('image/png');
-    showReviewPanel(dataUrl);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    await scanBill(dataUrl);
   }
 
   function retakePhoto() {
@@ -866,14 +867,81 @@
       updateQueueUI();
     }
     const reader = new FileReader();
-    reader.onload = e => {
-      showReviewPanel(e.target.result);
+    reader.onload = async e => {
+      await scanBill(e.target.result);
     };
     reader.readAsDataURL(file);
     input.value = '';
   }
 
-  function showReviewPanel(imageDataUrl) {
+  async function scanBill(imageDataUrl) {
+    // Show scan panel with loading state while AI reads the bill
+    document.getElementById('cam-scan-panel').style.display = 'block';
+    document.getElementById('cam-review-panel').style.display = 'none';
+    document.getElementById('cam-video').style.display = 'none';
+    document.getElementById('cam-capture-btn').style.display = 'none';
+    document.getElementById('cam-retake-btn').style.display = 'none';
+    const status = document.getElementById('cam-status');
+    status.textContent = 'Reading bill with AI…';
+    status.className = 'cam-status';
+
+    const TRAITS = [
+      'Continual Learning & Growth Mindset',
+      'Critical Thinking & Problem Solving',
+      'Creativity & Innovation',
+      'Adaptability & Flexibility',
+      'Resilience & Grit',
+      'Communication & Empathy',
+      'Collaboration & Teamwork',
+      'Honesty, Integrity, & Responsibility',
+      'Healthy Living, Wellness, & Self-Awareness'
+    ];
+
+    const SYSTEM = `You are reading a "Trait Dough" physical bill used at East Mifflin School District. The bill has fields filled in by a staff member:
+- Student name (written in)
+- Grade (circled: 7 or 8)
+- Squad color (circled: Black, Gold, Grey, or Purple)
+- Trait (one of 9 LRG traits is circled or checked)
+- Notes (optional, written in)
+
+The 9 traits are:
+${TRAITS.map((t,i)=>(i+1)+'. '+t).join('\n')}
+
+Return ONLY a JSON object with these exact keys:
+{"student_name":"","grade":"7 or 8 or empty","squad":"BLACK or GOLD or GREY or PURPLE or empty","trait":"exact trait name from the list above or empty","notes":""}
+
+If a field is unclear or not visible, use an empty string. Never guess.`;
+
+    let extracted = {};
+    try {
+      const base64 = imageDataUrl.includes(',') ? imageDataUrl.split(',')[1] : imageDataUrl;
+      const mediaType = imageDataUrl.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+      const res = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 300,
+          system: SYSTEM,
+          messages: [{ role: 'user', content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: 'Read this Trait Dough bill and return the JSON.' }
+          ]}]
+        })
+      });
+      const data = await res.json();
+      const raw = data.content?.find(b => b.type === 'text')?.text || '{}';
+      const clean = raw.replace(/```json|```/g, '').trim();
+      extracted = JSON.parse(clean);
+    } catch(e) {
+      console.warn('AI scan failed, falling back to manual', e);
+    }
+
+    showReviewPanel(imageDataUrl, extracted);
+  }
+
+  function showReviewPanel(imageDataUrl, prefill) {
+    prefill = prefill || {};
     document.getElementById('cam-scan-panel').style.display = 'none';
     document.getElementById('cam-review-panel').style.display = 'block';
     document.getElementById('cam-title').textContent = 'Fill In From Bill';
@@ -895,8 +963,26 @@
     document.querySelectorAll('.cam-trait-btn').forEach(b => b.classList.remove('selected'));
     document.querySelectorAll('.cam-sq-btn').forEach(b => b.classList.remove('selected'));
 
-    // Focus student name input
-    setTimeout(() => document.getElementById('cam-student').focus(), 200);
+    // Auto-fill from AI scan results
+    if (prefill.student_name) document.getElementById('cam-student').value = prefill.student_name;
+    if (prefill.notes)        document.getElementById('cam-notes').value   = prefill.notes;
+    if (prefill.grade === '7' || prefill.grade === '8') {
+      const gradeBtn = document.querySelector(`.cam-grade-btn[data-grade="${prefill.grade}"]`);
+      if (gradeBtn) { gradeBtn.classList.add('selected'); camSelectedGrade = prefill.grade; document.getElementById('cam-grade').value = prefill.grade; }
+    }
+    if (prefill.squad && ['BLACK','GOLD','GREY','PURPLE'].includes(prefill.squad)) {
+      const sqBtn = document.querySelector(`.cam-sq-btn[data-squad="${prefill.squad}"]`);
+      if (sqBtn) { sqBtn.classList.add('selected'); camSelectedSquad = prefill.squad; document.getElementById('cam-squad').value = prefill.squad; }
+    }
+    if (prefill.trait) {
+      const traitBtn = Array.from(document.querySelectorAll('.cam-trait-btn')).find(b => b.dataset.trait === prefill.trait);
+      if (traitBtn) { traitBtn.classList.add('selected'); camSelectedTrait = prefill.trait; document.getElementById('cam-trait').value = prefill.trait; }
+    }
+
+    // Focus first empty required field
+    if (!prefill.student_name) {
+      setTimeout(() => document.getElementById('cam-student').focus(), 100);
+    }
   }
 
   function addToQueueAndRescan() {
@@ -1212,4 +1298,5 @@
 </script>
 </body>
 </html>
+
 

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<?!= include('Styles') ?>
+<?!= include('Logo') ?>
+<style>
+  .bill { position: relative; border: 2px solid var(--purple); border-radius: 12px; padding: 16px; margin-bottom: 14px; background: #fff; }
+  .bill-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .bill-head h3 { margin: 0; font-size: 1.35rem; color: var(--purple); }
+  .bill-x { border: 0; background: none; color: var(--muted); font-size: .9rem; font-weight: 700; cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+  .bill-x:hover { color: var(--bad); background: var(--bad-soft); }
+
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 700px) { .pillars { grid-template-columns: 1fr; } }
+  .pillar { border-radius: 10px; padding: 8px; }
+  .pillar h4 { margin: 0 0 6px; font-family: 'Patrick Hand SC', sans-serif; font-weight: 400; font-size: 1.15rem; text-align: center; }
+  .pillar.Present { background: var(--present-bg); color: var(--present-ink); }
+  .pillar.Personable { background: var(--personable-bg); color: var(--personable-ink); }
+  .pillar.Productive { background: var(--productive-bg); color: var(--productive-ink); }
+  .pillar.Other { background: var(--purple-soft); color: var(--purple); }
+  .trait { display: block; width: 100%; text-align: left; margin-bottom: 6px; padding: 10px 12px; border-radius: 8px; border: 2px solid transparent;
+    background: rgba(255,255,255,.75); color: inherit; font-weight: 700; font-size: .95rem; line-height: 1.25; cursor: pointer; }
+  .trait:last-child { margin-bottom: 0; }
+  .trait:hover { background: #fff; }
+  .trait[aria-pressed="true"] { background: #fff; border-color: currentColor; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .trait[aria-pressed="true"]::before { content: '◉ '; }
+
+  .add-bill { width: 100%; padding: 16px; border: 2px dashed var(--purple-2); border-radius: 12px; background: var(--purple-soft); color: var(--purple);
+    font-weight: 800; font-size: 1.05rem; cursor: pointer; }
+  .add-bill:hover { background: #e6dbf3; }
+
+  .submit-bar { position: sticky; bottom: 0; padding: 14px 0 6px; background: linear-gradient(to top, var(--paper) 70%, rgba(247,244,250,0)); }
+  .submit-bar .btn { width: 100%; padding: 18px; font-size: 1.2rem; }
+  #err { margin-bottom: 10px; }
+
+  #done { position: fixed; inset: 0; background: rgba(29,16,41,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .done-box { background: #fff; border: 3px solid var(--purple); border-radius: 18px; padding: 32px 24px; max-width: 460px; width: 100%; text-align: center; }
+  .done-box .big { font-size: 3rem; line-height: 1; }
+  .done-box h2 { margin: 8px 0 6px; font-size: 2.2rem; color: var(--purple); }
+  .done-box p { margin: 6px 0; font-size: 1.05rem; }
+  .staff-link { display: block; margin-top: 28px; text-align: center; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <img id="logo" alt="Clash of Classes 2026-27 squads shield">
+    <div>
+      <h1 class="hand" id="title">Trait Dough</h1>
+      <p id="sub">Turn in your Trait Dough</p>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="h-you">
+    <h2 class="hand" id="h-you">About you</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="name">First and last name</label>
+        <input type="text" id="name" autocomplete="off" autocapitalize="words" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="sid">800 number</label>
+        <input type="text" id="sid" inputmode="numeric" autocomplete="off" maxlength="12">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <span class="label" id="l-grade">Grade</span>
+        <div class="choices" id="grade" role="group" aria-labelledby="l-grade"></div>
+      </div>
+      <div class="field">
+        <span class="label" id="l-team">Team</span>
+        <div class="choices teams" id="team" role="group" aria-labelledby="l-team"></div>
+      </div>
+    </div>
+    <div class="field">
+      <span class="label" id="l-squad">Squad</span>
+      <div class="squads" id="squad" role="group" aria-labelledby="l-squad"></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-dough">
+    <h2 class="hand" id="h-dough">Your Trait Dough <small id="count"></small></h2>
+    <p class="muted" style="margin:-6px 0 14px">One card for each Trait Dough. Pick the trait that's circled, who gave it to you, and what you did.</p>
+    <div id="bills"></div>
+    <button type="button" class="add-bill" id="addBill">+ Add another Trait Dough</button>
+  </section>
+
+  <div class="submit-bar">
+    <div id="err" class="msg bad" role="alert"></div>
+    <button type="button" class="btn primary" id="submit">Turn in my Trait Dough</button>
+  </div>
+
+  <a class="staff-link" id="staffLink">Staff</a>
+</div>
+
+<datalist id="staffList"></datalist>
+
+<div id="done" class="hidden" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
+  <div class="done-box">
+    <div class="big">💵</div>
+    <h2 class="hand" id="doneTitle">Thanks!</h2>
+    <p id="doneCount"></p>
+    <p class="muted" id="doneMsg"></p>
+    <button type="button" class="btn primary" id="next" style="margin-top:16px;width:100%">Next student</button>
+    <p class="muted" style="font-size:.85rem;margin-top:10px" id="doneTimer"></p>
+  </div>
+</div>
+
+<script>
+  const CFG = <?!= publicConfigJs_() ?>;
+  const BASE = <?!= JSON.stringify(baseUrl || '') ?>;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const state = { grade: '', team: '', squad: '', bills: [] };
+  let billSeq = 0;
+
+  // ── setup ──
+  $('logo').src = CFG.logoUrl || window.TD_LOGO;
+  $('title').textContent = CFG.title;
+  $('sub').textContent = 'Turn in your Trait Dough' + (CFG.school ? ' · ' + CFG.school : '');
+  document.title = CFG.title;
+  $('sid').placeholder = CFG.idStartsWith ? CFG.idStartsWith + '•'.repeat(Math.max((CFG.idDigits || 7) - CFG.idStartsWith.length, 0)) : '';
+  $('staffLink').href = BASE ? BASE + '?view=admin' : '?view=admin';
+  $('staffList').innerHTML = CFG.staff.map(n => '<option value="' + esc(n) + '">').join('');
+
+  function choiceGroup(el, values, key, labelFn, cls) {
+    el.innerHTML = values.map(v => '<button type="button" class="choice ' + (cls || '') + '" aria-pressed="false" data-v="' + esc(v) + '">' + esc(labelFn ? labelFn(v) : v) + '</button>').join('');
+    el.onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      state[key] = b.dataset.v;
+      el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      el.classList.remove('group-invalid');
+    };
+  }
+  choiceGroup($('grade'), CFG.grades, 'grade', g => /^\d+$/.test(g) ? g + 'th' : g);
+  choiceGroup($('team'), CFG.teams, 'team', null, 'team');
+
+  function isLight(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return false;
+    const n = parseInt(m[1], 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 165;
+  }
+  $('squad').innerHTML = CFG.squads.map(s => {
+    const c = CFG.squadColors[s] || '#4b1a7a';
+    return '<button type="button" class="squad" style="--sq:' + esc(c) + '" data-light="' + (isLight(c) ? 1 : 0) + '" aria-pressed="false" data-v="' + esc(s) + '">' + esc(s) + '</button>';
+  }).join('');
+  $('squad').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.squad = b.dataset.v;
+    $('squad').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    $('squad').classList.remove('group-invalid');
+  };
+
+  // Traits grouped by pillar, in the same order as the paper bill.
+  const PILLARS = [];
+  CFG.traits.forEach(t => { const p = t.pillar || 'Other'; if (PILLARS.indexOf(p) === -1) PILLARS.push(p); });
+
+  // ── bills ──
+  function addBill() {
+    if (state.bills.length >= CFG.maxBills) return;
+    const bill = { key: ++billSeq, trait: '', givenBy: '', did: '' };
+    state.bills.push(bill);
+    renderBills();
+    const card = document.querySelector('[data-bill="' + bill.key + '"]');
+    if (state.bills.length > 1 && card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderBills() {
+    $('bills').innerHTML = state.bills.map((b, i) => {
+      const cols = PILLARS.map(p => {
+        const traits = CFG.traits.filter(t => (t.pillar || 'Other') === p);
+        return '<div class="pillar ' + esc(/^(Present|Personable|Productive)$/.test(p) ? p : 'Other') + '"><h4>' + esc(p) + '</h4>' +
+          traits.map(t => '<button type="button" class="trait" data-trait="' + esc(t.trait) + '" aria-pressed="' + (b.trait === t.trait) + '">' + esc(t.trait) + '</button>').join('') +
+          '</div>';
+      }).join('');
+      return '<div class="bill" data-bill="' + b.key + '">' +
+        '<div class="bill-head"><h3 class="hand">Trait Dough #' + (i + 1) + '</h3>' +
+        (state.bills.length > 1 ? '<button type="button" class="bill-x" data-remove="' + b.key + '">Remove</button>' : '') + '</div>' +
+        '<div class="field"><span class="label">Trait circled</span><div class="pillars" data-traits="' + b.key + '">' + cols + '</div></div>' +
+        '<div class="field"><label for="g' + b.key + '">Who gave it to you?</label>' +
+        '<input type="text" id="g' + b.key + '" list="staffList" autocomplete="off" data-given="' + b.key + '" value="' + esc(b.givenBy) + '" placeholder="Teacher or staff name"></div>' +
+        '<div class="field"><label for="d' + b.key + '">What did you do to earn it?</label>' +
+        '<textarea id="d' + b.key + '" data-did="' + b.key + '" maxlength="600">' + esc(b.did) + '</textarea></div>' +
+        '</div>';
+    }).join('');
+    const n = state.bills.length;
+    $('count').textContent = n === 1 ? '1 bill' : n + ' bills';
+    $('submit').textContent = 'Turn in ' + n + ' Trait Dough';
+    $('addBill').classList.toggle('hidden', n >= CFG.maxBills);
+  }
+
+  const billByKey = k => state.bills.find(b => String(b.key) === String(k));
+  $('bills').addEventListener('click', e => {
+    const rm = e.target.closest('[data-remove]');
+    if (rm) { state.bills = state.bills.filter(b => String(b.key) !== rm.dataset.remove); renderBills(); return; }
+    const t = e.target.closest('.trait');
+    if (t) {
+      const wrap = t.closest('[data-traits]');
+      billByKey(wrap.dataset.traits).trait = t.dataset.trait;
+      wrap.querySelectorAll('.trait').forEach(x => x.setAttribute('aria-pressed', String(x === t)));
+      wrap.classList.remove('group-invalid');
+    }
+  });
+  $('bills').addEventListener('input', e => {
+    const el = e.target;
+    if (el.dataset.given) billByKey(el.dataset.given).givenBy = el.value;
+    if (el.dataset.did) billByKey(el.dataset.did).did = el.value;
+    el.classList.remove('invalid');
+  });
+  $('addBill').onclick = addBill;
+  ['name', 'sid'].forEach(id => $(id).addEventListener('input', () => $(id).classList.remove('invalid')));
+
+  // ── validate + submit ──
+  function problem() {
+    const name = $('name').value.trim().replace(/\s+/g, ' ');
+    const sid = $('sid').value.replace(/\D/g, '');
+    if (name.length < 3 || name.indexOf(' ') === -1) return [$('name'), 'Type your first and last name.'];
+    const idMsg = 'Type your 800 number' + (CFG.idDigits ? ' (' + CFG.idDigits + ' digits)' : '') + '.';
+    if (!sid || (CFG.idDigits && sid.length !== CFG.idDigits) || (CFG.idStartsWith && sid.indexOf(CFG.idStartsWith) !== 0)) return [$('sid'), idMsg];
+    if (!state.grade) return [$('grade'), 'Pick your grade.'];
+    if (!state.team) return [$('team'), 'Pick your team.'];
+    if (!state.squad) return [$('squad'), 'Pick your squad.'];
+    for (let i = 0; i < state.bills.length; i++) {
+      const b = state.bills[i];
+      if (!b.trait) return [document.querySelector('[data-traits="' + b.key + '"]'), 'Pick the trait circled on Trait Dough #' + (i + 1) + '.'];
+      if (!b.givenBy.trim()) return [$('g' + b.key), 'Type who gave you Trait Dough #' + (i + 1) + '.'];
+    }
+    return null;
+  }
+
+  function flag(el, msg) {
+    $('err').textContent = msg;
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') { el.classList.add('invalid'); el.focus({ preventScroll: true }); }
+    else el.classList.add('group-invalid');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  $('submit').onclick = () => {
+    $('err').textContent = '';
+    const p = problem();
+    if (p) { flag(p[0], p[1]); return; }
+    const btn = $('submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Sending…';
+    const payload = {
+      name: $('name').value.trim().replace(/\s+/g, ' '),
+      id: $('sid').value.replace(/\D/g, ''),
+      grade: state.grade, team: state.team, squad: state.squad,
+      bills: state.bills.map(b => ({ trait: b.trait, givenBy: b.givenBy.trim(), did: b.did.trim() })),
+    };
+    google.script.run
+      .withSuccessHandler(res => { btn.disabled = false; renderBills(); showDone(JSON.parse(res), payload.name); })
+      .withFailureHandler(err => {
+        btn.disabled = false; renderBills();
+        $('err').textContent = (err && err.message ? err.message : 'Something went wrong.') + ' Try again, or ask the office.';
+      })
+      .submitDough(JSON.stringify(payload));
+  };
+
+  // ── done + reset for the next student ──
+  let timer = null;
+  function showDone(res, name) {
+    $('doneTitle').textContent = 'Thanks, ' + name.split(' ')[0] + '!';
+    $('doneCount').textContent = 'You turned in ' + res.count + ' Trait Dough.';
+    $('doneMsg').textContent = CFG.confirmMessage;
+    $('done').classList.remove('hidden');
+    $('next').focus();
+    let left = CFG.resetSeconds;
+    $('doneTimer').textContent = 'Clearing in ' + left + 's';
+    clearInterval(timer);
+    timer = setInterval(() => {
+      left--;
+      $('doneTimer').textContent = 'Clearing in ' + left + 's';
+      if (left <= 0) reset();
+    }, 1000);
+  }
+
+  function reset() {
+    clearInterval(timer);
+    $('done').classList.add('hidden');
+    $('name').value = ''; $('sid').value = ''; $('err').textContent = '';
+    state.grade = state.team = state.squad = '';
+    document.querySelectorAll('[aria-pressed="true"]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    state.bills = []; billSeq = 0; addBill();
+    $('name').focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+  $('next').onclick = reset;
+
+  addBill();
+  $('name').focus({ preventScroll: true });
+  window.scrollTo(0, 0);
+</script>
+</body>
+</html>

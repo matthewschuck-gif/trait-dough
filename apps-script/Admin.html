@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<?!= include('Styles') ?>
+<?!= include('Logo') ?>
+<style>
+  .card { border-width: 1px; border-color: var(--line); }
+  .topnav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .topnav a, .topnav button { font-size: .85rem; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); margin-bottom: 18px; overflow-x: auto; }
+  .tab { padding: 10px 16px; border: 0; background: none; font-weight: 800; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+  .tab[aria-selected="true"] { color: var(--purple); border-bottom-color: var(--purple); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .stat .k { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .stat .v { font-size: 1.9rem; font-weight: 800; line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .filters select, .filters input { width: auto; padding: 8px 10px; font-size: .9rem; }
+  .filters input[type=search] { flex: 1; min-width: 180px; }
+  .filters .grow { flex: 1; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th { text-align: left; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); background: #fbf9fd; position: sticky; top: 0; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f0ebf5; vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tr.won td { background: #fffaf0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .who b { display: block; }
+  .who span { color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  .did { max-width: 300px; color: #3e3150; }
+  .did.clip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+  .trait-cell { max-width: 220px; }
+  .p-Present { color: var(--present-ink); } .p-Personable { color: var(--personable-ink); } .p-Productive { color: var(--productive-ink); }
+  .empty { padding: 28px; text-align: center; color: var(--muted); }
+
+  .draw-box { text-align: center; padding: 28px 16px; }
+  .draw-box .entries { color: var(--muted); margin: 6px 0 18px; }
+  .drawn { border: 3px solid var(--gold); border-radius: 16px; padding: 22px; margin: 18px auto 0; max-width: 520px; text-align: left; background: #fffdf6; }
+  .drawn h3 { margin: 0; font-size: 2.2rem; color: var(--purple); }
+  .drawn .meta { margin: 6px 0 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .drawn dl { margin: 0; display: grid; grid-template-columns: 120px 1fr; gap: 6px 10px; }
+  .drawn dt { color: var(--muted); font-weight: 700; }
+  .drawn dd { margin: 0; }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .drawn { animation: pop .25s ease-out; }
+
+  .award-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 16px; }
+  .award-row .field { margin: 0; }
+  .award-row input[type=number] { width: 120px; }
+  .check { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; padding-bottom: 12px; }
+
+  .bars { display: grid; gap: 6px; }
+  .bar { display: grid; grid-template-columns: minmax(120px, 260px) 1fr 44px; gap: 10px; align-items: center; font-size: .9rem; }
+  .bar .track { height: 14px; background: #f1ecf6; border-radius: 7px; overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 7px; background: var(--purple-2); }
+  .bar .n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .data-grid { grid-template-columns: 1fr; } }
+  .data-grid h3 { margin: 0 0 10px; font-size: 1.05rem; }
+
+  #modal { position: fixed; inset: 0; background: rgba(29,16,41,.5); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .modal-box { background: #fff; border-radius: 16px; padding: 22px; max-width: 460px; width: 100%; }
+  .modal-box h3 { margin: 0 0 6px; font-size: 1.3rem; }
+  #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; max-width: 92vw; }
+  .login { max-width: 360px; margin: 10vh auto 0; text-align: center; }
+  .login img { width: 110px; }
+</style>
+</head>
+<body>
+
+<div id="loginView" class="wrap hidden">
+  <div class="card login" style="border:3px solid var(--purple)">
+    <img id="loginLogo" alt="Clash of Classes shield">
+    <h1 class="hand" style="color:var(--purple);margin:8px 0 4px;font-size:2rem">Trait Dough</h1>
+    <p class="muted" style="margin:0 0 16px">Staff dashboard</p>
+    <input type="password" id="pw" placeholder="Staff password" autocomplete="current-password">
+    <div id="loginErr" class="msg bad" style="margin-top:10px"></div>
+    <button class="btn primary" id="loginBtn" style="width:100%;margin-top:12px">Unlock</button>
+  </div>
+</div>
+
+<div id="appView" class="wrap wide hidden">
+  <header class="brand">
+    <img id="logo" alt="Clash of Classes shield">
+    <div>
+      <h1 class="hand">Trait Dough</h1>
+      <p id="sub">Staff dashboard</p>
+    </div>
+    <div class="spacer"></div>
+    <nav class="topnav">
+      <a class="btn ghost small" id="infoLink" target="_blank">How it works</a>
+      <a class="btn ghost small" id="sheetLink" target="_blank">Open Sheet</a>
+      <a class="btn ghost small" id="pastLink" target="_blank">Past winners log</a>
+      <button class="btn ghost small" id="refresh">Refresh</button>
+      <button class="btn ghost small" id="logout">Sign out</button>
+    </nav>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="recent" aria-selected="true">Recent submissions</button>
+    <button class="tab" role="tab" data-tab="draw" aria-selected="false">Weekly drawing</button>
+    <button class="tab" role="tab" data-tab="winners" aria-selected="false">Winners</button>
+    <button class="tab" role="tab" data-tab="data" aria-selected="false">Data</button>
+  </div>
+
+  <section id="tab-recent">
+    <div class="filters">
+      <select id="fWeek" aria-label="Week"></select>
+      <select id="fSquad" aria-label="Squad"></select>
+      <select id="fStatus" aria-label="Status">
+        <option value="">All bills</option><option value="Entered">Not awarded</option><option value="Winner">Winners</option>
+      </select>
+      <input type="search" id="fSearch" placeholder="Search name, 800#, teacher, trait…">
+      <button class="btn primary small" id="csvAll">Download CSV</button>
+      <button class="btn ghost small" id="csvView">CSV of this view</button>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>When</th><th>Student</th><th>Gr</th><th>Team</th><th>Squad</th><th>Trait</th><th>Given by</th><th>What they did</th><th></th></tr></thead>
+      <tbody id="recentBody"></tbody>
+    </table></div>
+    <p class="muted" id="recentNote" style="font-size:.85rem"></p>
+  </section>
+
+  <section id="tab-draw" class="hidden">
+    <div class="card draw-box">
+      <div class="filters" style="justify-content:center">
+        <label for="dWeek" style="font-weight:700">Drawing for the week of</label>
+        <select id="dWeek"></select>
+      </div>
+      <div class="entries" id="dEntries"></div>
+      <button class="btn gold" id="drawBtn" style="font-size:1.15rem;padding:16px 28px">🎡 Draw a winner</button>
+      <div id="drawResult"></div>
+    </div>
+  </section>
+
+  <section id="tab-winners" class="hidden">
+    <div class="filters">
+      <select id="wWeek" aria-label="Week"></select>
+      <div class="grow"></div>
+      <button class="btn primary small" id="csvWinners">Download winners CSV</button>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Week of</th><th>Student</th><th>Teacher</th><th>Squad</th><th>Gr</th><th>Team</th><th>Trait</th><th>Points</th><th>Clash</th><th></th></tr></thead>
+      <tbody id="winBody"></tbody>
+    </table></div>
+  </section>
+
+  <section id="tab-data" class="hidden">
+    <div class="filters">
+      <label for="aWeek" style="font-weight:700">Show</label>
+      <select id="aWeek"></select>
+    </div>
+    <p class="muted" style="margin-top:0">Who's giving, who's receiving, and which traits. Use it to spot traits, teachers, or groups of students being left out.</p>
+    <div class="data-grid" id="dataGrid"></div>
+  </section>
+</div>
+
+<div id="modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal-box">
+    <h3 id="mTitle">Award winner</h3>
+    <div id="mBody"></div>
+    <div class="award-row">
+      <div class="field">
+        <label for="mPoints">Squad points <span class="hint">(from the wheel)</span></label>
+        <input type="number" id="mPoints" min="0" max="1000" step="1">
+      </div>
+      <label class="check" id="mClashWrap"><input type="checkbox" id="mClash" checked> Send to Clash of Classes</label>
+    </div>
+    <div id="mErr" class="msg bad" style="margin-top:10px"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn ghost" id="mCancel">Cancel</button>
+      <button class="btn gold" id="mOk">Award</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="msg good hidden" role="status"></div>
+
+<script>
+  const BASE = <?!= JSON.stringify(baseUrl || '') ?>;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let TOKEN = '';
+  try { TOKEN = sessionStorage.getItem('td_token') || ''; } catch (e) {}
+  let D = null;
+
+  $('loginLogo').src = window.TD_LOGO;
+  $('logo').src = window.TD_LOGO;
+
+  function call(fn, ...args) {
+    return new Promise((resolve, reject) => {
+      google.script.run.withSuccessHandler(resolve).withFailureHandler(err => {
+        if (err && /SESSION_EXPIRED/.test(err.message)) { showLogin('Your session ended. Enter the password again.'); }
+        reject(err);
+      })[fn](...args);
+    });
+  }
+
+  function toast(msg, bad) {
+    const t = $('toast');
+    t.textContent = msg; t.className = 'msg ' + (bad ? 'bad' : 'good');
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hidden'), 4500);
+  }
+
+  // ── login ──
+  function showLogin(msg) {
+    TOKEN = ''; try { sessionStorage.removeItem('td_token'); } catch (e) {}
+    $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden');
+    $('loginErr').textContent = msg || ''; $('pw').value = ''; $('pw').focus();
+  }
+  $('loginBtn').onclick = () => {
+    const btn = $('loginBtn'); btn.disabled = true; $('loginErr').textContent = '';
+    google.script.run.withSuccessHandler(tok => {
+      btn.disabled = false;
+      if (!tok) { $('loginErr').textContent = 'That password isn\'t right.'; $('pw').select(); return; }
+      TOKEN = tok; try { sessionStorage.setItem('td_token', tok); } catch (e) {}
+      load();
+    }).withFailureHandler(err => { btn.disabled = false; $('loginErr').textContent = err.message; }).login($('pw').value);
+  };
+  $('pw').onkeydown = e => { if (e.key === 'Enter') $('loginBtn').click(); };
+  $('logout').onclick = () => showLogin('Signed out.');
+
+  // ── load ──
+  async function load() {
+    if (!TOKEN) { showLogin(); return; }
+    try {
+      D = JSON.parse(await call('getDashboard', TOKEN));
+    } catch (e) {
+      if (!/SESSION_EXPIRED/.test(e.message)) showLogin(e.message);
+      return;
+    }
+    $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden');
+    if (D.config.logoUrl) { $('logo').src = D.config.logoUrl; }
+    $('sub').textContent = 'Staff dashboard' + (D.config.school ? ' · ' + D.config.school : '');
+    $('infoLink').href = (BASE || '') + '?view=info';
+    $('sheetLink').href = D.sheetUrl;
+    $('pastLink').href = D.pastWinnersUrl; $('pastLink').classList.toggle('hidden', !D.pastWinnersUrl);
+    fillWeekSelects();
+    renderStats(); renderRecent(); renderWinners(); renderData(); updateDrawEntries();
+  }
+  $('refresh').onclick = () => load().then(() => toast('Up to date.'));
+
+  // ── helpers ──
+  const squadColor = s => (D.config.squadColors || {})[s] || '#6d5f80';
+  function isLight(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return false;
+    const n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) > 165;
+  }
+  const pill = s => { const c = squadColor(s); return '<span class="pill" style="background:' + esc(c) + ';color:' + (isLight(c) ? '#1d1029' : '#fff') + '">' + esc(s) + '</span>'; };
+  const weeks = () => [...new Set(D.recent.map(r => r.week).concat(D.winners.map(w => w.week)).concat([D.thisWeek]).filter(Boolean))].sort().reverse();
+  const weekLabel = w => {
+    const d = new Date(w + 'T12:00:00');
+    return (w === D.thisWeek ? 'This week · ' : '') + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+  function fillWeekSelects() {
+    const opts = weeks().map(w => '<option value="' + esc(w) + '">' + esc(weekLabel(w)) + '</option>').join('');
+    ['fWeek', 'wWeek', 'aWeek'].forEach(id => {
+      const keep = $(id).value;
+      $(id).innerHTML = '<option value="">All weeks</option>' + opts;
+      if (keep !== undefined && [...$(id).options].some(o => o.value === keep)) $(id).value = keep;
+    });
+    const keepD = $('dWeek').value;
+    $('dWeek').innerHTML = opts;
+    $('dWeek').value = keepD && weeks().includes(keepD) ? keepD : D.thisWeek;
+    $('fSquad').innerHTML = '<option value="">All squads</option>' + D.config.squads.map(s => '<option>' + esc(s) + '</option>').join('');
+  }
+  function shortWhen(at) {
+    const m = /^(\d{4})-(\d{2})-(\d{2}) (.*)$/.exec(at || '');
+    return m ? Number(m[2]) + '/' + Number(m[3]) + ' <span class="muted">' + esc(m[4]) + '</span>' : esc(at);
+  }
+
+  // ── stats ──
+  function renderStats() {
+    const wk = D.recent.filter(r => r.week === D.thisWeek);
+    const students = new Set(wk.map(r => r.id || r.name)).size;
+    const givers = new Set(wk.map(r => r.givenBy.toLowerCase())).size;
+    const wins = D.winners.filter(w => w.week === D.thisWeek).length;
+    $('stats').innerHTML = [
+      ['Bills this week', wk.length], ['Students this week', students],
+      ['Staff giving this week', givers], ['Winners this week', wins],
+    ].map(s => '<div class="stat"><div class="k">' + s[0] + '</div><div class="v">' + s[1] + '</div></div>').join('');
+  }
+
+  // ── recent ──
+  function filtered() {
+    const w = $('fWeek').value, sq = $('fSquad').value, st = $('fStatus').value, q = $('fSearch').value.trim().toLowerCase();
+    return D.recent.filter(r => (!w || r.week === w) && (!sq || r.squad === sq) && (!st || r.status === st) &&
+      (!q || [r.name, r.id, r.givenBy, r.trait, r.team, r.did].join(' ').toLowerCase().includes(q)));
+  }
+  function renderRecent() {
+    const rows = filtered();
+    $('recentBody').innerHTML = rows.length ? rows.map(r => {
+      const won = r.status === 'Winner';
+      return '<tr class="' + (won ? 'won' : '') + '">' +
+        '<td class="num">' + shortWhen(r.at) + '</td>' +
+        '<td class="who"><b>' + esc(r.name) + '</b><span>' + esc(r.id) + '</span></td>' +
+        '<td class="num">' + esc(r.grade) + '</td><td>' + esc(r.team) + '</td><td>' + pill(r.squad) + '</td>' +
+        '<td class="trait-cell p-' + esc(r.pillar) + '">' + esc(r.trait) + '</td>' +
+        '<td>' + esc(r.givenBy) + '</td>' +
+        '<td><div class="did clip" title="Click to expand">' + (r.did ? esc(r.did) : '<span class="muted">—</span>') + '</div></td>' +
+        '<td>' + (won ? '<span class="pill" style="background:var(--gold-soft);color:var(--productive-ink)">🏆 Winner' + (r.points ? ' +' + esc(r.points) : '') + '</span>'
+          : '<button class="btn ghost small" data-award="' + esc(r.billId) + '">Award</button>') + '</td></tr>';
+    }).join('') : '<tr><td colspan="9" class="empty">No Trait Dough matches.</td></tr>';
+    $('recentNote').textContent = 'Showing ' + rows.length + ' of the newest ' + D.recent.length + ' bills (' + D.totalBills + ' in the Sheet). The CSV download has all of them.';
+  }
+  ['fWeek', 'fSquad', 'fStatus'].forEach(id => $(id).onchange = renderRecent);
+  $('fSearch').oninput = renderRecent;
+  $('recentBody').onclick = e => {
+    const d = e.target.closest('.did'); if (d) d.classList.toggle('clip');
+    const a = e.target.closest('[data-award]'); if (a) openAward(D.recent.find(r => r.billId === a.dataset.award));
+  };
+
+  // ── award modal ──
+  let awarding = null;
+  function openAward(bill, afterAward) {
+    if (!bill) return;
+    awarding = { bill, afterAward };
+    $('mTitle').textContent = 'Award ' + bill.name;
+    $('mBody').innerHTML = '<p style="margin:0 0 4px">' + pill(bill.squad) + ' Grade ' + esc(bill.grade) + ' · Team ' + esc(bill.team) + '</p>' +
+      '<p class="muted" style="margin:0">' + esc(bill.trait) + ' · from ' + esc(bill.givenBy) + '</p>';
+    $('mPoints').value = D.defaultPoints;
+    $('mClashWrap').classList.toggle('hidden', !D.clashOn);
+    $('mClash').checked = D.clashOn;
+    $('mErr').textContent = '';
+    $('modal').classList.remove('hidden');
+    $('mPoints').focus();
+  }
+  $('mCancel').onclick = () => $('modal').classList.add('hidden');
+  $('mOk').onclick = async () => {
+    const btn = $('mOk'); btn.disabled = true; $('mErr').textContent = '';
+    try {
+      const res = JSON.parse(await call('awardBill', TOKEN, awarding.bill.billId, $('mPoints').value, $('mClash').checked));
+      $('modal').classList.add('hidden');
+      toast('🏆 ' + awarding.bill.name + ' awarded.' + (res.clash ? ' Clash: ' + res.clash : ''), /^NOT SENT/.test(res.clash));
+      if (awarding.afterAward) awarding.afterAward();
+      await load();
+    } catch (e) {
+      $('mErr').textContent = e.message;
+    }
+    btn.disabled = false;
+  };
+
+  // ── drawing ──
+  function updateDrawEntries() {
+    const w = $('dWeek').value;
+    const wonIds = new Set(D.recent.filter(r => r.week === w && r.status === 'Winner').map(r => r.id || r.name));
+    const pool = D.recent.filter(r => r.week === w && r.status !== 'Winner' && !(D.skipPastWinners && wonIds.has(r.id || r.name)));
+    const students = new Set(pool.map(r => r.id || r.name)).size;
+    $('dEntries').textContent = pool.length ? pool.length + ' entries from ' + students + ' student' + (students === 1 ? '' : 's') + '. Every bill is one entry.' +
+      (D.skipPastWinners && wonIds.size ? ' This week\'s winners are left out.' : '') : 'No entries for that week yet.';
+    $('drawBtn').disabled = !pool.length;
+  }
+  $('dWeek').onchange = () => { $('drawResult').innerHTML = ''; updateDrawEntries(); };
+  $('drawBtn').onclick = async () => {
+    const btn = $('drawBtn'); btn.disabled = true;
+    try {
+      const res = JSON.parse(await call('drawWinner', TOKEN, $('dWeek').value));
+      if (res.empty) { $('drawResult').innerHTML = '<p class="muted">No entries left for that week.</p>'; return; }
+      const b = res.bill;
+      $('drawResult').innerHTML = '<div class="drawn"><div class="muted" style="font-weight:700">Drawn from ' + res.entries + ' entries</div>' +
+        '<h3 class="hand">' + esc(b.name) + '</h3>' +
+        '<div class="meta">' + pill(b.squad) + '<span class="muted">Grade ' + esc(b.grade) + ' · Team ' + esc(b.team) + ' · ' + esc(b.id) + '</span></div>' +
+        '<dl><dt>Trait</dt><dd>' + esc(b.trait) + '</dd><dt>Given by</dt><dd>' + esc(b.givenBy) + '</dd>' +
+        '<dt>What they did</dt><dd>' + (b.did ? esc(b.did) : '<span class="muted">—</span>') + '</dd></dl>' +
+        '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn gold" id="drawAward">Award this winner</button>' +
+        '<button class="btn ghost" id="drawAgain">Draw again</button></div></div>';
+      $('drawAward').onclick = () => openAward(b, () => { $('drawResult').innerHTML = ''; });
+      $('drawAgain').onclick = () => $('drawBtn').click();
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      updateDrawEntries();
+    }
+  };
+
+  // ── winners ──
+  function renderWinners() {
+    const w = $('wWeek').value;
+    const rows = D.winners.filter(x => !w || x.week === w);
+    $('winBody').innerHTML = rows.length ? rows.map(x =>
+      '<tr><td class="num">' + esc(x.week) + '</td><td class="who"><b>' + esc(x.student) + '</b><span>' + esc(x.id) + '</span></td>' +
+      '<td>' + esc(x.teacher) + '</td><td>' + pill(x.squad) + '</td><td class="num">' + esc(x.grade) + '</td><td>' + esc(x.team) + '</td>' +
+      '<td class="trait-cell">' + esc(x.trait) + '</td><td class="num">' + esc(x.points) + '</td><td style="font-size:.82rem">' + esc(x.clash) + '</td>' +
+      '<td>' + (x.billId ? '<button class="btn ghost small" data-undo="' + esc(x.billId) + '">Undo</button>' : '') + '</td></tr>'
+    ).join('') : '<tr><td colspan="10" class="empty">No winners yet.</td></tr>';
+  }
+  $('wWeek').onchange = renderWinners;
+  $('winBody').onclick = async e => {
+    const u = e.target.closest('[data-undo]'); if (!u) return;
+    const w = D.winners.find(x => x.billId === u.dataset.undo);
+    if (!confirm('Undo the award for ' + (w ? w.student : 'this student') + '? Their bill goes back into the drawing.')) return;
+    try {
+      const res = JSON.parse(await call('unawardBill', TOKEN, u.dataset.undo));
+      toast(res.clashWasSent ? 'Award undone. Clash points were already sent (' + res.clash + '); remove them on the Clash sheet if needed.' : 'Award undone.', res.clashWasSent);
+      await load();
+    } catch (err) { toast(err.message, true); }
+  };
+
+  // ── data ──
+  function renderData() {
+    const w = $('aWeek').value;
+    const rows = D.recent.filter(r => !w || r.week === w);
+    const count = (key, norm) => {
+      const m = new Map();
+      rows.forEach(r => { const raw = String(r[key] || '').trim(); if (!raw) return; const k = norm ? norm(raw) : raw; m.set(k, (m.get(k) || 0) + 1); });
+      return [...m.entries()].sort((a, b) => b[1] - a[1]);
+    };
+    const titleCase = s => s.replace(/\s+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const block = (title, entries, colorFn, limit) => {
+      const max = Math.max(1, ...entries.map(e => e[1]));
+      const shown = limit ? entries.slice(0, limit) : entries;
+      return '<div class="card soft"><h3>' + esc(title) + '</h3>' + (shown.length ? '<div class="bars">' + shown.map(e =>
+        '<div class="bar"><span>' + esc(e[0]) + '</span><div class="track"><div class="fill" style="width:' + (e[1] / max * 100) + '%;' + (colorFn ? 'background:' + colorFn(e[0]) : '') + '"></div></div><span class="n">' + e[1] + '</span></div>'
+      ).join('') + '</div>' + (limit && entries.length > limit ? '<p class="muted" style="font-size:.85rem;margin:8px 0 0">+ ' + (entries.length - limit) + ' more</p>' : '') : '<p class="muted">No data.</p>') + '</div>';
+    };
+    // Every trait shows, even at 0, so gaps stand out.
+    const traitCounts = D.config.traits.map(t => [t.trait, rows.filter(r => r.trait === t.trait).length]);
+    const pillarColor = name => { const t = D.config.traits.find(x => x.trait === name); return t && t.pillar === 'Present' ? '#8a8a8a' : t && t.pillar === 'Productive' ? '#c99a0a' : '#6b2fa0'; };
+    const squadCounts = D.config.squads.map(s => [s, rows.filter(r => r.squad === s).length]);
+    const teamCounts = D.config.teams.map(t => ['Team ' + t, rows.filter(r => r.team === t).length]);
+    const gradeCounts = D.config.grades.map(g => ['Grade ' + g, rows.filter(r => r.grade === g).length]);
+    const studentCounts = count('name', titleCase);
+    $('dataGrid').innerHTML =
+      block('Bills by squad', squadCounts, squadColor) +
+      block('Bills by trait', traitCounts, pillarColor) +
+      block('Who is giving', count('givenBy', titleCase), null, 25) +
+      block('Bills by team', teamCounts) +
+      block('Bills by grade', gradeCounts) +
+      block('Students with the most bills', studentCounts, null, 15);
+  }
+  $('aWeek').onchange = renderData;
+
+  // ── tabs ──
+  document.querySelector('.tabs').onclick = e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+    ['recent', 'draw', 'winners', 'data'].forEach(n => $('tab-' + n).classList.toggle('hidden', n !== t.dataset.tab));
+  };
+
+  // ── CSV ──
+  function download(name, text) {
+    const blob = new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+  const stamp = () => new Date().toISOString().slice(0, 10);
+  async function serverCsv(which, name) {
+    try { download(name, await call('exportCsv', TOKEN, which)); }
+    catch (e) { toast(e.message, true); }
+  }
+  $('csvAll').onclick = () => serverCsv('submissions', 'trait-dough-submissions-' + stamp() + '.csv');
+  $('csvWinners').onclick = () => serverCsv('winners', 'trait-dough-winners-' + stamp() + '.csv');
+  $('csvView').onclick = () => {
+    const cell = v => { v = String(v == null ? '' : v); if (/^[=+\-@]/.test(v)) v = "'" + v; return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const head = ['Timestamp', 'Week Of', 'Student Name', '800#', 'Grade', 'Team', 'Squad', 'Trait', 'Pillar', 'Given By', 'What They Did', 'Status', 'Points', 'Bill ID'];
+    const rows = filtered().map(r => [r.at, r.week, r.name, r.id, r.grade, r.team, r.squad, r.trait, r.pillar, r.givenBy, r.did, r.status, r.points, r.billId]);
+    download('trait-dough-view-' + stamp() + '.csv', [head].concat(rows).map(r => r.map(cell).join(',')).join('\r\n'));
+  };
+
+  load();
+</script>
+</body>
+</html>

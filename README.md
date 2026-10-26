@@ -62,7 +62,7 @@ wrong tries, that person is locked out for 10 minutes.
    **Anyone within EASD**. Copy the `/exec` URL.
 6. Back in the Sheet, reload and run **Trait Dough › Set up / repair tabs** again. This writes the page
    links on the Info tab. Then run **Check Clash of Classes connection**.
-7. Point **bit.ly/traitdough** at the new `/exec` URL. Bookmark the turn-in page on the guidance
+7. The live short link is **bit.ly/ems-traitdough**. Bookmark the turn-in page on the guidance
    computer, and bookmark `?view=admin` for staff.
 
 If students will sign in to the turn-in computer with accounts outside the EASD domain, set *Who has

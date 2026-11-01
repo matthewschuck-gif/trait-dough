@@ -107,15 +107,15 @@
 <!-- Craft wiring for Trait Dough (the kit itself is between the craft markers below) -->
 <style>
   html:root { --craft-accent: var(--purple); --craft-accent-2: var(--gold); }
-  .btn { transition: background .2s, border-color .2s, color .2s, transform var(--craft-press-ms, .5s) var(--craft-spring, ease-out); }
-  .btn:active:not(:disabled) { transform: var(--craft-squash, scale(.97)); transition-duration: .07s; }
+  .btn { transition: background .2s, border-color .2s, color .2s, transform .2s, scale var(--craft-press-ms, .5s) var(--craft-spring, ease-out); }
+  .btn:active:not(:disabled) { scale: var(--craft-squash, .97); transition-duration: .07s; }
   /* The drawing's wind-up: three bills shuffle (anticipation) before the winner pops out. */
   .td-shuffle { position: relative; width: 150px; height: 84px; margin: 22px auto 8px; }
   .td-shuffle span { position: absolute; inset: 0; border-radius: 10px; border: 3px solid var(--purple); background: var(--gold-soft);
     display: grid; place-items: center; font-size: 28px; box-shadow: 0 8px 20px -10px rgba(75, 26, 122, .5); animation: tdShuffle .5s ease-in-out infinite alternate; }
   .td-shuffle span:nth-child(2) { animation-delay: -.17s; } .td-shuffle span:nth-child(3) { animation-delay: -.34s; }
   @keyframes tdShuffle { from { transform: translateX(-26px) rotate(-8deg); } to { transform: translateX(26px) rotate(7deg); } }
-  @media (prefers-reduced-motion: reduce) { .btn, .btn:active { transition: none; transform: none; } .td-shuffle span { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .btn, .btn:active { transition: none; transform: none; scale: none; } .td-shuffle span { animation: none; } }
 </style>
 <!-- craft:start (copied from emsd/craft-kit/craft.html by craft-kit/sync.js; edit there, not here) -->
 <style>
@@ -131,34 +131,35 @@
   --craft-accent: #9b5de5; --craft-accent-2: #ffe100;
   --craft-out: cubic-bezier(.22, 1, .36, 1);
   --craft-spring: cubic-bezier(.34, 1.56, .64, 1);
-  --craft-squash: scale(1.06, .9); --craft-press-ms: .5s;
+  --craft-squash: 1.06 .9; --craft-press-ms: .5s;
   --craft-key: rgba(255, 218, 160, .22); --craft-rim: rgba(140, 186, 255, .32);
 }
 @supports (transition-timing-function: linear(0, 1)) {
   /* A real spring: overshoots, comes back past rest, settles. */
   :root { --craft-spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1); }
 }
-html[data-craft="calm"] { --craft-squash: scale(1.02, .96); --craft-press-ms: .35s; }
+html[data-craft="calm"] { --craft-squash: 1.02 .96; --craft-press-ms: .35s; }
 
-/* Squash on press, spring back on release (buttons that do something). */
-.craft-press { transition: transform var(--craft-press-ms) var(--craft-spring); }
-.craft-press:active:not(:disabled) { transform: var(--craft-squash); transition: transform .07s ease-out; }
+/* Squash on press, spring back on release (buttons that do something). Craft uses the separate
+   `scale` property, so it stacks with an element's own transform (centering, hover lifts). */
+.craft-press { transition: scale var(--craft-press-ms) var(--craft-spring); }
+.craft-press:active:not(:disabled) { scale: var(--craft-squash); transition: scale .07s ease-out; }
 
 /* A success moment: anticipation (a tiny crouch), stretch up, squash, settle. */
 .craft-pop { animation: craftPop .7s var(--craft-out) both; }
 @keyframes craftPop {
-  0% { transform: scale(.7, .7); opacity: 0; }
-  30% { transform: scale(1.12, .88); opacity: 1; }
-  50% { transform: scale(.94, 1.08); }
-  70% { transform: scale(1.03, .98); }
-  100% { transform: none; }
+  0% { scale: .7; opacity: 0; }
+  30% { scale: 1.12 .88; opacity: 1; }
+  50% { scale: .94 1.08; }
+  70% { scale: 1.03 .98; }
+  100% { scale: 1; }
 }
 html[data-craft="calm"] .craft-pop { animation-name: craftPopCalm; animation-duration: .45s; }
-@keyframes craftPopCalm { 0% { transform: scale(.94); opacity: 0; } 60% { transform: scale(1.02); opacity: 1; } 100% { transform: none; } }
+@keyframes craftPopCalm { 0% { scale: .94; opacity: 0; } 60% { scale: 1.02; opacity: 1; } 100% { scale: 1; } }
 
 /* A number that just finished counting lands with a little bump. */
 .craft-land { display: inline-block; animation: craftLand .5s var(--craft-out); }
-@keyframes craftLand { 0% { transform: none; } 35% { transform: scale(1.14, .9); } 65% { transform: scale(.97, 1.04); } 100% { transform: none; } }
+@keyframes craftLand { 0% { scale: 1; } 35% { scale: 1.14 .9; } 65% { scale: .97 1.04; } 100% { scale: 1; } }
 
 /* Cinematic light on a hero card: warm key light from the top left, cool rim along the bottom edge. */
 .craft-lit { position: relative; isolation: isolate; }
@@ -186,7 +187,7 @@ html[data-craft="calm"] .craft-pop { animation-name: craftPopCalm; animation-dur
 .craft-focus:focus-visible { outline: 2px solid var(--craft-accent-2); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .craft-press, .craft-press:active { transition: none !important; transform: none !important; }
+  .craft-press, .craft-press:active { transition: none !important; scale: none !important; }
   .craft-pop, .craft-land, .craft-motes::after { animation: none !important; }
 }
 </style>

@@ -361,8 +361,12 @@
   $('dWeek').onchange = () => { $('drawResult').innerHTML = ''; updateDrawEntries(); };
   $('drawBtn').onclick = async () => {
     const btn = $('drawBtn'); btn.disabled = true;
+    // Anticipation: the bills shuffle for a moment while the server draws (skipped for reduced motion).
+    const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!calm) $('drawResult').innerHTML = '<div class="td-shuffle" aria-hidden="true"><span>💵</span><span>💵</span><span>💵</span></div><p class="muted">Shuffling the bills…</p>';
     try {
-      const res = JSON.parse(await call('drawWinner', TOKEN, $('dWeek').value));
+      const [raw] = await Promise.all([call('drawWinner', TOKEN, $('dWeek').value), new Promise(r => setTimeout(r, calm ? 0 : 1400))]);
+      const res = JSON.parse(raw);
       if (res.empty) { $('drawResult').innerHTML = '<p class="muted">No entries left for that week.</p>'; return; }
       const b = res.bill;
       $('drawResult').innerHTML = '<div class="drawn"><div class="muted" style="font-weight:700">Drawn from ' + res.entries + ' entries</div>' +
@@ -372,6 +376,9 @@
         '<dt>What they did</dt><dd>' + (b.did ? esc(b.did) : '<span class="muted">—</span>') + '</dd></dl>' +
         '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn gold" id="drawAward">Award this winner</button>' +
         '<button class="btn ghost" id="drawAgain">Draw again</button></div></div>';
+      // The reveal: the winner's card pops (squash and stretch) and the moment is celebrated.
+      if (window.craftPop) window.craftPop($('drawResult').querySelector('.drawn'));
+      if (window.craftCelebrate) window.craftCelebrate($('drawResult').querySelector('h3'));
       $('drawAward').onclick = () => openAward(b, () => { $('drawResult').innerHTML = ''; });
       $('drawAgain').onclick = () => $('drawBtn').click();
     } catch (e) {

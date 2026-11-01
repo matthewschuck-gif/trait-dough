@@ -269,6 +269,9 @@
     $('doneMsg').textContent = CFG.confirmMessage;
     $('done').classList.remove('hidden');
     $('next').focus();
+    // Turned in: the bill pops and a little celebration flies out (Craft, in Styles).
+    if (window.craftPop) window.craftPop($('done').querySelector('.big'));
+    if (window.craftCelebrate) window.craftCelebrate($('doneTitle'));
     let left = CFG.resetSeconds;
     $('doneTimer').textContent = 'Clearing in ' + left + 's';
     clearInterval(timer);
